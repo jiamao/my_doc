@@ -21,7 +21,8 @@ window.EXIF.getData(file, function() {
 | 0°|1|
 |顺时针90°|	6
 |逆时针90°|	8
-|180°|	3
+|180°|	3|
+
 orientation值示意图：
 > ![orientation](https://github.com/jiamao/my_doc/blob/master/javascript/image/ori.gif?raw=true)
 
