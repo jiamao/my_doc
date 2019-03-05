@@ -1,10 +1,11 @@
-# 前端图片压缩
-
-利用canvas对图片进行压缩操作
-
-### 苹果手机下图片旋转问题解决
-由于苹果手机的拍照会有旋转，当使用canvas压缩后，其旋转信息会丢失。
-这里利用的是`exif` [https://github.com/exif-js/exif-js](https://github.com/exif-js/exif-js) 开源库来获取原图片的旋转方向，压缩后再把它转回来。 
+## 问题
+我们在用canvas压缩本地图片再上传后，发现ios下有些图片被旋转了90度。
+## 分析
+图片压缩前是正常的，假如我们不压缩直接上传也是OK的。那么问题出在压缩上。查找资料后，问题出在canvas压缩上，由于canvas绘制后，图片的旋转方位信息没有被保留，所以无法识别图片是旋转。
+## 解决
+解决办法就是，在压缩前获取图片的旋转方位。压缩时我们把图片回正。
+获取图片方位我们就需要用到前端库 `exif`[https://github.com/exif-js/exif-js](https://github.com/exif-js/exif-js)
+代码：
 ```javascript
  //获取照片方向角属性，用户旋转控制
 window.EXIF.getData(file, function() {
@@ -12,12 +13,20 @@ window.EXIF.getData(file, function() {
     var orientation = window.EXIF.getTag(this, 'Orientation')||1;
     callback && callback(orientation, file);
 });
-
 ```
+其中获取到的`orientation`说明
 
+| 旋转角度|参数
+| :- | :- |
+| 0°|1|
+|顺时针90°|	6
+|逆时针90°|	8
+|180°|	3
 orientation值示意图：
 > ![orientation](https://github.com/jiamao/my_doc/blob/master/javascript/image/ori.gif?raw=true)
-### 压缩
+
+#### 修改压缩代码
+我们只需要对 1,3,6,8进行回正即可。
 ```javascript
 /**
  * 用canvas把图片压缩
