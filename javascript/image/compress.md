@@ -31,6 +31,7 @@ orientation值示意图：
 ```javascript
 /**
  * 用canvas把图片压缩
+ * img 图片img标签
  * maxw 压缩后的宽
  * maxh 压缩后的高
  * quality 压缩质量0-100
@@ -39,12 +40,12 @@ orientation值示意图：
  * format 格式  image/png image/jpeg   default=image/png
  * @returns {string} 压缩后图片的base64
  * */
-function compressImg(maxw, maxh, quality, fixRatio, orientation, format) {
+function compressImg(img, maxw, maxh, quality, fixRatio, orientation, format) {
     try{
         var canvas = document.createElement('canvas');                
 
-        var w = this.width||this.naturalWidth;
-        var h = this.height||this.naturalHeight;
+        var w = img.width||img.naturalWidth;
+        var h = img.height||img.naturalHeight;
         maxw = maxw || w;
         maxh = maxh || h;
         //先把长宽按给的宽高压缩，计算比例
@@ -116,7 +117,7 @@ function compressImg(maxw, maxh, quality, fixRatio, orientation, format) {
         ctx.fillStyle = "#fff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.drawImage(this, ox, oy, w, h, dx, dy, desw, desh);
+        ctx.drawImage(img, ox, oy, w, h, dx, dy, desw, desh);
 
         return canvas.toDataURL(format||'image/png', quality / 100);
     }
