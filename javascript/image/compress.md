@@ -86,7 +86,7 @@ function compressImg(img, maxw, maxh, quality, fixRatio, orientation, format) {
             case 6: {
                 canvas.width = desh;
                 canvas.height = desw;
-                ctx.rotate(90 * Math.PI / 180);
+                ctx.rotate(Math.PI / 2);
                 dy = -desh;
                 break;
             }
@@ -94,7 +94,7 @@ function compressImg(img, maxw, maxh, quality, fixRatio, orientation, format) {
             case 8: {
                 canvas.width = desh;
                 canvas.height = desw;
-                ctx.rotate(-90 * Math.PI / 180);
+                ctx.rotate(-Math.PI / 2);
                 dx = -desw;
                 break;
             }
@@ -102,7 +102,7 @@ function compressImg(img, maxw, maxh, quality, fixRatio, orientation, format) {
             case 3: {
                 canvas.width = desw;
                 canvas.height = desh;
-                ctx.rotate(180 * Math.PI / 180);
+                ctx.rotate(Math.PI);
                 dx = -w;
                 dy = -h;
                 break;
