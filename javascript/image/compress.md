@@ -13,10 +13,10 @@ window.EXIF.getData(file, function() {
     callback && callback(orientation, file);
 });
 
-orientation值示意图：
-
 ```
 
+orientation值示意图：
+> ![orientation](https://github.com/jiamao/my_doc/blob/master/javascript/image/ori.gif?raw=true)
 ### 压缩
 ```javascript
 /**
