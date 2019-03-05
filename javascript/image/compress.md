@@ -4,7 +4,7 @@
 
 ### 苹果手机下图片旋转问题解决
 由于苹果手机的拍照会有旋转，当使用canvas压缩后，其旋转信息会丢失。
-这里利用的是 `exif` 开源库来获取原图片的旋转方向，压缩后再把它转回来。 
+这里利用的是`exif` [https://github.com/exif-js/exif-js](https://github.com/exif-js/exif-js) 开源库来获取原图片的旋转方向，压缩后再把它转回来。 
 ```javascript
  //获取照片方向角属性，用户旋转控制
 window.EXIF.getData(file, function() {
@@ -12,6 +12,9 @@ window.EXIF.getData(file, function() {
     var orientation = window.EXIF.getTag(this, 'Orientation')||1;
     callback && callback(orientation, file);
 });
+
+orientation值示意图：
+
 ```
 
 ### 压缩
@@ -65,6 +68,7 @@ function compressImg(maxw, maxh, quality, fixRatio, orientation, format) {
         var dx = 0;
         var dy = 0;
         var ctx = canvas.getContext('2d');
+        //对被旋转的图片回正
         orientation = Number(orientation)||1;
         switch(orientation) {
             //需要顺时针（向左）90度旋转
