@@ -24,7 +24,7 @@ window.EXIF.getData(file, function() {
 |180°|	3|
 
 orientation值示意图：
-> ![orientation](https://github.com/jiamao/my_doc/blob/master/javascript/image/ori.gif?raw=true)
+> ![orientation](https://github.com/jiamao/my_doc/blob/master/imgs/ori.gif?raw=true)
 
 #### 修改压缩代码
 我们只需要对 1,3,6,8进行回正即可。
