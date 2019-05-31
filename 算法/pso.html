@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>pso</title>
+</head>
+<body>
+<button onclick="onClick()">开始</button><br>
+<div style="width: 100%">
+<canvas id="pso" width="800px" height="800px" style="margin: auto;display: block;background-color: #29bd8b">你的浏览器暂不支持此功能</canvas>
+</div>
+</body>
+<script type="text/javascript">
+    var canvas=document.getElementById('pso');
+    var ctx=canvas.getContext('2d');
+    ctx.fillStyle = "black";
+    ctx.fillRect(400, 400, 4, 4);
+    var c1 = 2;
+    var c2 = 2;
+    var w = 0.6;
+    var number = 0;
+    function onClick() {
+        constructor(initData(10000,800),{x:400,y:400})
+    }
+    var pso = {
+        velocity:function (pBest,gBest,present,velocity) {
+            var v = velocity||{x:0,y:0};
+            v.x = w*v.x + c1*Math.random()*(pBest.x - present.x) + c2*Math.random()*(gBest.x - present.x);
+            v.y = w*v.y + c1*Math.random()*(pBest.y - present.y) + c2*Math.random()*(gBest.y - present.y);
+            return v;
+        },
+        present:function ( velocity,present) {
+            var p = present||{x:0,y:0};
+            p.x = p.x + velocity.x;
+            p.y = p.y + velocity.y;
+            return p;
+        },
+        gBest:function (arr,goal) {
+            var gBest = {
+                x:Number.POSITIVE_INFINITY,
+                y:Number.POSITIVE_INFINITY
+            };
+            arr.forEach(function (item) {
+              if(Math.abs(goal.x-gBest.x) > Math.abs(goal.x-item.present.x)){
+                  gBest.x = item.present.x
+              }
+              if(Math.abs(goal.y-gBest.y) > Math.abs(goal.y-item.present.y)){
+                  gBest.y = item.present.y
+              }
+            });
+            return gBest
+        }
+    };
+    function time(arr,goal){
+        return function () {
+            constructor(arr,goal)
+        }
+    }
+    function constructor(arr,goal) {
+        ctx.clearRect(0,0,800,800);
+        ctx.fillStyle = "black";
+        ctx.fillRect(400, 400, 4, 4);
+        arr.forEach(function (item) {
+            ctx.fillStyle = "blue";
+            ctx.fillRect(item.present.x, item.present.y, 4, 4);
+        });
+        var gBest = pso.gBest(arr,goal);
+        for(var i = 0;i < arr.length;i++){
+            arr[i].velocity = pso.velocity(arr[i].present,gBest,arr[i].present,arr[i].velocity);
+            arr[i].present = pso.present(arr[i].velocity,arr[i].present);
+        }
+        if(arr.every(function (item){return item.present === goal})){
+            console.log('success',arr);
+        }else{
+            console.log(number++);
+            console.log(arr);
+            setTimeout(time(arr,goal),100);
+        }
+    }
+    /**
+     * @return {number}
+     */
+    function RandomNumBoth(Max){
+        var Range = Max;
+        var Rand = Math.random();
+        return Math.round(Rand * Range);
+    }
+    function initData(num,Max) {
+        var init = [];
+        for(var i = 0;i<num;i++){
+            init.push( {
+                velocity:{
+                    x:0,
+                    y:0
+                },
+                present:{
+                    x:RandomNumBoth(Max),
+                    y:RandomNumBoth(Max)
+                }
+            })
+        }
+        return init
+    }
+</script>
+</html>
