@@ -14,13 +14,19 @@
     var canvas=document.getElementById('pso');
     var ctx=canvas.getContext('2d');
     ctx.fillStyle = "black";
-    ctx.fillRect(400, 400, 4, 4);
+    
     var c1 = 2;
     var c2 = 2;
     var w = 0.6;
     var number = 0;
+    var curPos = {x:400,y:400};
+    canvas.onmousemove = function(e) {
+        curPos.x = e.offsetX;
+        curPos.y = e.offsetY;
+    }
+
     function onClick() {
-        constructor(initData(10000,800),{x:400,y:400})
+        constructor(initData(10000,800), curPos)
     }
     var pso = {
         velocity:function (pBest,gBest,present,velocity) {
@@ -57,9 +63,9 @@
         }
     }
     function constructor(arr,goal) {
-        ctx.clearRect(0,0,800,800);
+        ctx.clearRect(0,0,canvas.width, canvas.height);
         ctx.fillStyle = "black";
-        ctx.fillRect(400, 400, 4, 4);
+        ctx.fillRect(goal.x, goal.y, 4, 4);
         arr.forEach(function (item) {
             ctx.fillStyle = "blue";
             ctx.fillRect(item.present.x, item.present.y, 4, 4);

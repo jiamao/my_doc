@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+
+</head>
+<body>
+
+</body>
+</html>
+<!-- The core React library -->
+<script src="//fb.me/react-0.13.3.js"></script>
+
+<script src="//qian-img.tenpay.com/mb/lib/sea.js" charset="utf-8"></script>
+
+<script>
+    // seajs 的简单配置
+    seajs.config({
+        base: "./"
+    })
+    seajs.use('build/index.js', function(page){
+        page.init(document.body);
+    });
+</script>
