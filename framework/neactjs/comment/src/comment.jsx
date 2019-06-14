@@ -1,34 +1,44 @@
 define(function(require, exports, module){
-    var Comment = React.createClass({
-        render: function(){
+    class Comment extends React.Component {
+        constructor(props) {
+            super(props)
+        }
+        render(){
             return <div>{this.props.author}:{this.props.content}</div>
         }
-    });
-    var CommentList = React.createClass({
-        render: function() {
-        var commentNodes = this.props.data.map(function (comment) {
-            return (
-                <Comment key={comment.id} author={comment.author} content={comment.content}>
-                </Comment>
-                );
-        });
-        return (
-            <div className="commentList">
-            {commentNodes}
-            </div>
-            );
+    };
+    class CommentList extends React.Component {
+        constructor(props) {
+            super(props)
         }
-    });
-    exports.CommentBox = React.createClass({
-            render: function() {
+        render() {
+            var commentNodes = this.props.data.map(function (comment) {
                 return (
-                    <div className="commentBox">
-                    <h1>Comments</h1>
-                    <CommentList data={this.props.data} />
-                 </div>
+                    <Comment key={comment.id} author={comment.author} content={comment.content}>
+                    </Comment>
+                    );
+            });
+            return (
+                <div className="commentList">
+                {commentNodes}
+                </div>
+                );
+        }
+    }
+
+    class CommentBox extends React.Component {
+        constructor(props) {
+            super(props)
+        }
+        render() {
+            return (
+                <div className="commentBox">
+                <h1>Comments</h1>
+                <CommentList data={this.props.data} />
+                </div>
             );
         }
-    });
+    }
 
-
+    module.exports = CommentBox;
 })

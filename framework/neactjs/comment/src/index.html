@@ -10,7 +10,9 @@
 </body>
 </html>
 <!-- The core React library -->
-<script src="//fb.me/react-0.13.3.js"></script>
+<script src="//cdn.staticfile.org/react/16.4.0/umd/react.development.js"></script>
+<script src="//cdn.staticfile.org/react-dom/16.4.0/umd/react-dom.development.js"></script>
+<script src="//cdn.staticfile.org/babel-standalone/6.26.0/babel.min.js"></script>
 
 <script src="//qian-img.tenpay.com/mb/lib/sea.js" charset="utf-8"></script>
 
@@ -19,7 +21,12 @@
     seajs.config({
         base: "./"
     })
-    seajs.use('build/index.js', function(page){
-        page.init(document.body);
-    });
+</script>
+
+<script type="text/babel" src="./index.jsx"></script>
+
+<script>
+    //seajs.use('index', function(page){
+    //    page.init(document.body);
+    //});
 </script>
