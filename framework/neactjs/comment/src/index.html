@@ -6,13 +6,17 @@
 
 </head>
 <body>
-
+    <div id="myapp"></div>
 </body>
 </html>
 <!-- The core React library -->
-<script src="//cdn.staticfile.org/react/16.4.0/umd/react.development.js"></script>
-<script src="//cdn.staticfile.org/react-dom/16.4.0/umd/react-dom.development.js"></script>
-<script src="//cdn.staticfile.org/babel-standalone/6.26.0/babel.min.js"></script>
+<!--<script src="//cdn.staticfile.org/react/16.4.0/umd/react.development.js"></script>
+<script src="//cdn.staticfile.org/react-dom/16.4.0/umd/react-dom.development.js"></script>-->
+
+<script crossorigin src="//qian-img.tenpay.com/mb/lib/react/react.production.min.js"></script>
+<script crossorigin src="//qian-img.tenpay.com/mb/lib/react/react-dom.production.min.js"></script>
+
+<script src="//qian-img.tenpay.com/mb/lib/babel.min.js"></script>
 
 <script src="//qian-img.tenpay.com/mb/lib/sea.js" charset="utf-8"></script>
 
@@ -20,13 +24,89 @@
     // seajs 的简单配置
     seajs.config({
         base: "./"
-    })
+    });
+    //生成ajax请求
+    //time 延时多少毫秒
+    window.httpRequest = function(url, callback, time) {
+        var xmlHttp;
+        if (window.ActiveXObject) {
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        else if (window.XMLHttpRequest) {
+            xmlHttp = new XMLHttpRequest();
+        }
+        if(!xmlHttp) {
+            callback(null);
+            return;
+        }
+        xmlHttp.onreadystatechange=function(e){
+            if(this.readyState == 4) {
+                if(this.status == 200) {
+                    callback&&callback(this.responseText||this.response);
+                }
+                else {
+                    callback&&callback();
+                }
+            }
+        };
+        xmlHttp.open("GET",url,true);
+        //缓存中没有,指定了需要TAG处理，则优先返回，并延时处理资源
+        if(time) {
+            //css延时请求，因为如果缓存中没有的话，会直接生成link标签保证加载顺序
+            setTimeout(function(){
+                xmlHttp.send(null);
+            }, time);
+        }
+        else {
+            xmlHttp.send(null);
+        }
+        return xmlHttp;
+    }
+
+    // 加载并转化jsx
+    function loadJSX(url, deps, callback) {
+        if(typeof deps == 'function') {
+            callback = deps;
+            deps = null;
+        }
+
+        if(deps) {
+            if(typeof deps == 'string') {
+                loadJSX(deps, function(ret) {
+                    loadJSX(url, callback);
+                });
+                return;
+            }
+            else if(deps.length) {
+                var dp = deps.shift();
+                if(dp) {
+                    loadJSX(dp, function(ret) {
+                        // 加载一个依赖后，再进行另一个
+                        loadJSX(url, deps, callback);
+                    });
+                    return;
+                }
+            }
+        }
+
+        httpRequest(url, function(content) {
+            if(!content) callback(false);
+            else {
+                var tf = Babel.transform(content, { presets: ['es2015', 'react'] });
+                eval(tf.code);
+                callback(true);
+            }
+        })
+    }
 </script>
 
-<script type="text/babel" src="./index.jsx"></script>
-
 <script>
-    //seajs.use('index', function(page){
-    //    page.init(document.body);
-    //});
+    loadJSX('./index.jsx', ['./comment.jsx'], function(ret) {
+        if(ret) {
+            seajs.use('index', function(page){
+                page.init(document.getElementById('myapp'));
+            });
+        }
+    });
+    
 </script>

@@ -1,5 +1,5 @@
 define('index', function(require, exports, module) {
-    var CommentBox = require('./comment');
+    var CommentBox = require('commentbox');
 
     class PageComment extends React.Component {
         constructor(props) {
@@ -12,7 +12,9 @@ define('index', function(require, exports, module) {
         }
         componentDidMount() {
             this.loadData();
-            this.interval = setInterval(this.loadData, this.props.interval);
+            this.interval = setInterval(()=>{
+                this.loadData();
+            }, this.props.interval);
         }
         componentWillUnmount() {
             clearInterval(this.interval);

@@ -1,4 +1,4 @@
-define(function(require, exports, module){
+define('commentbox', function(require, exports, module){
     class Comment extends React.Component {
         constructor(props) {
             super(props)
