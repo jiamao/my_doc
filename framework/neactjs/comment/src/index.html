@@ -104,7 +104,9 @@
     loadJSX('./index.jsx', ['./comment.jsx'], function(ret) {
         if(ret) {
             seajs.use('index', function(page){
-                page.init(document.getElementById('myapp'));
+                var ct = page.init(document.getElementById('myapp'));
+
+                console.log(ct);
             });
         }
     });

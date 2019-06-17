@@ -20,14 +20,16 @@ define('index', function(require, exports, module) {
             clearInterval(this.interval);
         }
         render(){
-            return (<CommentBox data={this.state.data} />);
+            return (
+                <CommentBox data={this.state.data} />
+            );
         }
     };
 
     exports.init = function(container){
 
         
-        ReactDOM.render(
+        return ReactDOM.render(
             <PageComment url="data.json" interval={2000} />,
             container
         );

@@ -4,7 +4,11 @@ define('commentbox', function(require, exports, module){
             super(props)
         }
         render(){
-            return <div>{this.props.author}:{this.props.content}</div>
+            return <div onClick={(e) => this.clickHandler(e)}>{this.props.author}:{this.props.content}</div>
+        }
+        clickHandler(e) {
+            alert('click:' + this.props.author);
+            console.log(e);
         }
     };
     class CommentList extends React.Component {
