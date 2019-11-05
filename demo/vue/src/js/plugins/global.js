@@ -5,11 +5,13 @@ export default {
         // 1. 添加全局方法或属性
         Vue.myGlobalMethod = function () {
             // 逻辑...
+            console.log(options);
         }
 
         // 2. 添加全局资源
         Vue.directive('my-directive', {
             bind (el, binding, vnode, oldVnode) {
+                console.log(el, oldVnode);
                 console.log('my-directive', binding, vnode);
             }
         })
@@ -29,6 +31,7 @@ export default {
         // 4. 添加实例方法
         Vue.prototype.$myMethod = function (methodOptions) {
             // 逻辑...
+            console.log(methodOptions);
         }
     }
 }

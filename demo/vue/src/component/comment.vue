@@ -1,14 +1,18 @@
 
-//import CommentItem from './commentItem.vue';
+<template>
+    <ul>
+        <CommentItem v-for="(item, index) in items" :key="index" :index="index" v-bind="item" v-on:click-item="showUser" v-my-directive="item"  >
+            {{ 'q' + index }}
+        </CommentItem>
+</ul>
+</template>
+<script>
+    import CommentItem from './commentItem.vue';
 
 export default {
-    template: `<ul>
-            <CommentItem v-for="(item, index) in items" :key="index" :index="index" v-bind="item" v-on:click-item="showUser" v-my-directive="item"  >
-                {{ 'q' + index }}
-            </CommentItem>
-    </ul>`,
+   
     components: {
-        'CommentItem': httpVueLoader('component/commentItem.vue')
+        'CommentItem': CommentItem
     },
     props: ['items'],
     methods: {
@@ -17,3 +21,4 @@ export default {
         }
     }
 }
+</script>
