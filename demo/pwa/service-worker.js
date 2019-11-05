@@ -39,21 +39,25 @@ self.addEventListener('fetch', function (event) {
         // 发现匹配的响应缓存
         if(response){
             console.log('service worker 匹配并读取缓存：' + event.request.url);
+            if(/\.html$/.test(event.request.url)) fetchResource(event.request); // 如果是html，依然去请求一次，缓存起来
             return response;
         }
         console.log('没有匹配上：' + event.request.url);
-        //return fetch(event.request);
-        var fetchRequest = event.request.clone();
-        return fetch(fetchRequest).then(function(response){
-            if(!response || response.status !== 200 || (response.type !== 'basic' && response.type !== 'cors')){
-                return response;
-            }
-            var responseToCache = response.clone();
-            caches.open(cacheName).then(function (cache) {
-                console.log(cache);
-                cache.put(fetchRequest, responseToCache);
-            });
-            return response;
-        });
+        return fetchResource(event.request);
     }));
 });
+
+function fetchResource(request) {
+    request = request.clone();    
+    return fetch(request).then(function(response){
+        if(!response || response.status !== 200 || (response.type !== 'basic' && response.type !== 'cors')){
+            return response;
+        }
+        var responseToCache = response.clone();
+        caches.open(cacheName).then(function (cache) {
+            console.log(cache);
+            cache.put(request, responseToCache);
+        });
+        return response;
+    });
+}
