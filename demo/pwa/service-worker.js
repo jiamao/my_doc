@@ -5,7 +5,10 @@ const cacheName = 'v1';
 self.addEventListener('install', function(event){
     // 需要缓存的资源
     var cacheFiles = [
-        '/fefeding/javascript/my_doc/demo/pwa/index.html',
+        './index.html',
+        './images/72.png',
+        './images/128.png',
+        './images/256.png',
         'https://jiamao.github.io/jmgraph/src/jmGraph.js'
     ];
     console.log('service worker: run into install');
