@@ -14,7 +14,23 @@ self.addEventListener('install', function(event){
     console.log('service worker: run into install');
     event.waitUntil(caches.open(cacheName).then(function(cache)
     {
-        return cache.addAll(cacheFiles);
+        cache.matchAll(cacheFiles).then(res => {
+            console.log(res);
+        });
+
+        return Promise.all(cacheFiles.map(async function (k) {
+            var res = await cache.match(k);
+            // 缓存里没有才需要add 初始化
+            if(res) {
+                console.log(res);
+            }
+            else {
+                return cache.add(k);
+            }
+            return Promise.resolve(res);
+        }));
+
+        //return cache.addAll(cacheFiles);
     }));
 });
 
