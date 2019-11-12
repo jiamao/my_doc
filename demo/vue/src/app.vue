@@ -10,7 +10,7 @@
 
 
 <script>
-import Comment from './component/comment.vue';
+//import Comment from './component/comment.vue';
 
 
 export default {
@@ -33,7 +33,8 @@ export default {
         }
     },
     components: {
-        Comment
+        //Comment
+        'Comment': ()=>import('./component/comment.vue')
     }
 }
 </script>
