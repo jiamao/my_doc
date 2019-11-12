@@ -16,6 +16,7 @@ Vue.config.productionTip = false;
 Vue.config.devtools = true;
 
 export default function(entry) {
+    console.log(entry);
     return new Vue({
         //mixins:[mixin],
         //router,
