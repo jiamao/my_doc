@@ -12,7 +12,7 @@ export default {
         Vue.directive('my-directive', {
             bind (el, binding, vnode, oldVnode) {
                 console.log(el, oldVnode);
-                console.log('my-directive 2', binding, vnode);
+                console.log('my-directive 3', binding, vnode);
             }
         })
 
