@@ -9,11 +9,14 @@ gulp.task("default", function() {
                     "**/*+(index|.worker|.e2e).ts"],
             // TypeScript options (see typescript docs)
             module: "commonjs",
-            target: "es5",
+            target: "es6",
             includeDeclarations: false,
  
             // Output options (see typedoc docs)
             out: "./doc",
+
+            // default|minimal|path/to/theme
+            theme: 'minimal',
  
             // TypeDoc options (see typedoc docs)
             name: "基金接口",

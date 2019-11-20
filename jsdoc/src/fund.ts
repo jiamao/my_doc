@@ -16,7 +16,12 @@ interface IFund {
     /**
      * 公司信息
      */
-    company: ICompany
+    company: {
+        /**
+         * 公司名称
+         */
+        name: string
+    }
 }
 
 /**
@@ -51,5 +56,34 @@ interface fund {
      * @author fefeding
      * @date 2019-11-20
      */
-    sync_fund(code: string, req: IReq): IFund
+    sync_fund(code: string, req: {
+        /**
+         * 基金代码
+         */
+        code: string
+    }): { 
+        /**
+         * 基金代码
+         * @default null
+         */
+        code: string, 
+        /**
+         * 基金名称
+         */
+        name: string,
+    
+        /**
+         * 公司信息
+         */
+        company: {
+            /**
+             * 公司名称
+             */
+            name: string,            
+        },
+        /**
+         * 其它属性
+         */
+        attrs: Array<ICompany>
+    }
 }
