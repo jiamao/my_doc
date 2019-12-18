@@ -1,0 +1,15 @@
+{
+  "name": "trpc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "trpc-node-cli -t client client/greeter.js proto/greeter.proto && trpc-node-cli -t server server/handler.js proto/greeter.proto"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tencent/trpc-rpc": "^0.2.3-4"
+  }
+}
