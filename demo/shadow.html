@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+<title>理财通</title>
+<script src="//qian-img.tenpay.com/mb/lib/zepto.js"></script>
+
+<script>
+
+
+function devicemotion() {
+      this.lastX = this.lastY = this.lastZ = this.lastTime = null;
+      this.totalx = this.totaly = this.totalz = this.totalcount = 0;
+
+      this.threshold = 15;
+      this.canShake = true;
+      this.hasDeviceMotion = 'ondevicemotion' in window;
+
+      this.android = navigator.userAgent.match(/(Android)(\s+|\/)([\d.]+)/);      
+  }
+
+  devicemotion.prototype.initEvent = function() {
+      if(this.inited) return;
+      if(this.hasDeviceMotion) {
+          var self = this;
+          window.addEventListener('devicemotion',function(e) {
+              self.devicemotionEvent(e);
+          }, false);  
+      }
+      this.inited = true;
+      return this.hasDeviceMotion;
+  }
+
+  //绑定摇一摇功能
+  //如果不支持摇一摇，则会返回false
+  devicemotion.prototype.bindShake = function(options) {
+      if(!options) return;
+
+      if(this.hasDeviceMotion) {
+          this.shakeOption = options; 
+      }
+      else {
+          options.handler && options.handler();
+      }
+      this.initEvent();
+      return this.hasDeviceMotion;    
+  }
+
+  devicemotion.prototype.devicemotionEvent = function(e) {
+      if(!this.canShake) return false;
+      
+      var current = e.accelerationIncludingGravity;
+      var currentTime = new Date();
+     
+      var deltaX = 0;
+      var deltaY = 0;
+      var deltaZ = 0;
+
+      if ((this.lastX === null) && (this.lastY === null) && (this.lastZ === null)) {
+          this.lastX = current.x;
+          this.lastY = current.y;
+          this.lastZ = current.z;
+          return;
+      }
+
+      if(this.shakeOption) {
+          var ret = {
+            offx: current.x - this.lastX,
+            offy: current.y - this.lastY
+          };
+
+          this.shakeOption.handler.call(this, ret);         
+      }
+      this.lastX = current.x;
+      this.lastY = current.y;
+      this.lastZ = current.z;
+  }
+</script>
+<style>
+  .grad-container{
+    position: relative;
+    padding: 0;
+    margin:0;
+  }
+  .grad {
+    width:100%;
+    height:100%;
+    left:0;
+    top:0;
+    position: absolute;
+    background: linear-gradient(to bottom right, rgba(1,1,1,0),rgba(255,255,255,0.1) 40% ,rgba(255,255,255,0.2) 50%,rgba(255,255,255,0.1) 60%, rgba(1,1,1,0)); /* 标准的语法 */
+  }
+</style>
+</head>
+<body>
+  <div class="grad-container">
+    <img src="//qian-img.tenpay.com/mb/v4/img/vip/c2.png?d8ba9f60" style="width:100%;" />
+    <div class="grad js-grad"></div>
+  </div>
+  <div class="js-log"></div>
+  <script>
+  var dev = new devicemotion();
+  $(function(){
+    var curOffX = 50;
+    dev.bindShake({
+      handler: function(opt){
+        //$('.js-log').html(JSON.stringify(opt)+'<br />');
+        var x = opt.offx / 4 * 50;
+        curOffX += x;
+        if(curOffX < -10) curOffX = -10;
+        if(curOffX > 150) curOffX = 150;
+
+        $('.js-grad').css('background', 'linear-gradient(to bottom right, rgba(1,1,1,0),rgba(255,255,255,0.1) '+(curOffX-10)+'% ,rgba(255,255,255,0.2) '+curOffX+'%,rgba(255,255,255,0.1) '+(curOffX+10)+'%, rgba(1,1,1,0))'); 
+      }
+    });
+  });
+  </script>
+</body>
+</html>
