@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta charset="utf-8" />
+<meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta content="email=no" name="format-detection"/>
+    <title></title>
+    <script type="text/javascript" src="//mat1.gtimg.com/www/asset/lib/jquery/jquery/jquery-1.11.1.min.js"></script>
+
+    <script src="https://higuma.github.io/web-audio-recorder-js/js/WebAudioRecorder.min.js"></script>
+</head>
+<body>
+    <select id="sel_devices"></select>
+    <button onclick="startRecording(this);">record</button>
+    <button onclick="stopRecording(this);" disabled>stop</button>
+
+    <h2>h5录音</h2>
+    <ul id="recordingslist"></ul>
+
+    <h2>日志</h2>
+    <pre id="log"></pre>
+
+    <script>
+        function __log(e, data) {
+            log.innerHTML += "\n" + e + " " + (data || '');
+        }
+
+        window.onerror = function (msg, url, l) {
+            __log('url:' + url + ' <br /> error:' + msg + ' <br /> line:' + l);
+        }
+
+        var audioContext;
+        var recorder;
+        var audioInLevel, audioIn, testToneLevel, testTone;
+
+        //初始化录音程序
+        function startUserMedia(stream) {
+            __log('audioContext:' + audioContext);
+            if (audioIn) {
+                audioIn.disconnect();
+            }
+            
+            audioIn = audioContext.createMediaStreamSource(stream);
+
+            //音量
+            audioInLevel = audioContext.createGain();
+            audioInLevel.gain.value = 1;
+
+            //audioIn.connect(audioInLevel);
+
+            mixer = audioContext.createGain();
+
+            //audioIn.connect(audioContext.destination);
+            audioInLevel.connect(mixer);
+
+            //mixer.connect(audioContext.destination);//如果加上这句，话筒的声音就会传到扩音器中，造成不清
+
+            recorder = new WebAudioRecorder(mixer, {
+                workerDir: 'https://higuma.github.io/web-audio-recorder-js/lib-minified/',
+                encoding: 'mp3', //wav,mp3,ogg
+                numChannels: 2, //1=单声道，2=双声道                
+                options: {
+                    timeLimit: 3000,           // 设置最长录音时间（秒）
+                    encodeAfterRecord: false, // process encoding after recording
+                    progressInterval: 1000,   // encoding progress report interval (millisec)
+                    bufferSize: 4096,    // buffer size (use browser default)
+                    //各种解码参数
+                    wav: {
+                        mimeType: "audio/wav"
+                    },
+                    ogg: {
+                        mimeType: "audio/ogg",
+                        quality: 0.2           // (VBR only): quality = [-0.1 .. 1]
+                    },
+                    mp3: {
+                        mimeType: "audio/mpeg",
+                        bitRate: 160            // (CBR only): bit rate = [64 .. 320]
+                    }
+                },
+                onEncoderLoading: function (recorder, encoding) {
+                    __log("Loading " + (encoding.toUpperCase()) + " encoder ...");
+                }
+            });
+
+            recorder.onEncoderLoaded = function () {
+                __log('load encoder complete');
+            };
+
+            recorder.onTimeout = function (recorder) {
+                stopRecording();
+            };
+
+            recorder.onEncodingProgress = function (recorder, progress) {
+                __log('压缩中:' + progress);
+            };
+
+            recorder.onComplete = function (rec, blob) {
+                //结束录音，上传或下载
+                createDownloadLink(blob, rec);
+            };
+
+            recorder.onError = function (recorder, message) {                
+                __log(message);
+            };
+            //改变编码
+            // recorder.setEncoding(encoding);
+
+            __log('Media stream created.');            
+            __log('Recorder initialised.');
+        }
+
+        //开始录音
+        function startRecording(button) {
+            if(!recorder) {
+                __log('请选择设备初始化recorder');
+                return;
+            }
+            if (audioIn && audioInLevel) {
+                audioIn.connect(audioInLevel);
+            }
+
+            recorder && recorder.startRecording();
+            button.disabled = true;
+            button.nextElementSibling.disabled = false;
+            __log('Recording...');
+        }
+
+        //结束录音
+        function stopRecording(button) {
+            if (audioIn != null) {
+                audioIn.disconnect();
+            }
+            
+            recorder && recorder.finishRecording();////recorder.cancelRecording();//recorder.isRecording()
+
+            if (button) {
+                button.disabled = true;
+                button.previousElementSibling.disabled = false;
+            }
+            __log('Stopped recording.');
+
+        }
+
+        function createDownloadLink(blob, rec) {
+            
+            var url = URL.createObjectURL(blob);
+            var li = document.createElement('li');
+            var au = document.createElement('audio');
+            var hf = document.createElement('a');
+
+            au.controls = true;
+            au.src = url;
+            hf.target = "_blank";
+            hf.download = new Date().toISOString() + '.' + recorder.encoding;
+            hf.innerHTML = hf.download;
+            li.appendChild(au);
+            li.appendChild(hf);
+            recordingslist.appendChild(li);
+
+            //这里可以去上传
+            //upload(blob, au, hf);
+           
+        }
+
+        function upload(blob, au, hf) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        __log('upload complete');
+
+                        __log(xhr.responseText);
+                        var data = JSON.parse(xhr.responseText);
+
+                        hf.href = au.src = data.data.url;
+                    }
+                    else {
+                        __log('upload faild');
+                    }
+                }
+            }
+
+            //侦查当前附件上传情况
+            xhr.upload.onprogress = function (e) {
+                //console.log(e);
+                //上传进度
+                var total = e.total || card.length;
+                if (total <= 0) return;
+                var per = (e.loaded || e.position) / total * 100;
+                if (per > 100) per = 100;
+                __log(per.toFixed(2) + '%');
+            }
+
+            xhr.open("post", "../cgi/upload.ashx");  //wxh5_fund_face_check
+            //xhr.setRequestHeader("Content-Type", "multipart/form-data;");
+
+            var fd = new FormData();
+            fd.append("sound", blob);
+            fd.append('encoding', recorder.encoding);
+            __log('uploading ' + recorder.encoding);
+            xhr.send(fd);
+        }
+
+        //显示当前录音设备
+        function onGotDevices(devInfos) {
+            var index, info, name, options, _i, _len;
+            options = '<option value="no-input" selected>(No input)</option>';
+            index = 0;
+            for (_i = 0, _len = devInfos.length; _i < _len; _i++) {
+                info = devInfos[_i];
+                if (info.kind !== 'audioinput') {
+                    continue;
+                }
+                name = info.label || ("Audio in " + (++index));
+                options += "<option value=" + info.deviceId + ">" + name + "</option>";
+            }
+            $('#sel_devices').html(options);
+        }
+
+        //选择设备
+        $('#sel_devices').change(function () {
+            var constraint, deviceId;
+            deviceId = $(this).val();
+
+            if (deviceId === 'no-input') {
+                if (audioIn != null) {
+                    audioIn.disconnect();
+                }
+                audioIn = void 0;
+            } else {
+                if (deviceId === 'default-audio-input') {
+                    deviceId = void 0;
+                }
+                constraint = {
+                    audio: {
+                        deviceId: deviceId != null ? {
+                            exact: deviceId
+                        } : void 0,
+                        mandatory: {
+                            echoCancellation: false
+                        }
+                    }
+                };
+                //mediaDevices.getUserMedia为新标准
+                if ((navigator.mediaDevices != null) && (navigator.mediaDevices.getUserMedia != null)) {
+                    navigator.mediaDevices.getUserMedia(constraint).then(startUserMedia)["catch"](function (error) {
+                        switch (error.code || error.name) {
+                            case 'PERMISSION_DENIED':
+                            case 'PermissionDeniedError':
+                                __log('用户拒绝提供信息。');
+                                break;
+                            case 'NOT_SUPPORTED_ERROR':
+                            case 'NotSupportedError':
+                                __log('<a href="http://www.it165.net/edu/ewl/" target="_blank" class="keylink">浏览器</a>不支持硬件设备。');
+                                break;
+                            case 'MANDATORY_UNSATISFIED_ERROR':
+                            case 'MandatoryUnsatisfiedError':
+                                __log('无法发现指定的硬件设备。');
+                                break;
+                            default:
+                                __log('无法打开麦克风。异常信息:' + (error.code || error.name));
+                                break;
+                        }
+                    });
+                } else {
+                    navigator.getUserMedia({ audio: true }, function (s) {
+                        startUserMedia(s);
+                    }, function (error) {
+                        switch (error.code || error.name) {
+                            case 'PERMISSION_DENIED':
+                            case 'PermissionDeniedError':
+                                __log('用户拒绝提供信息。');
+                                break;
+                            case 'NOT_SUPPORTED_ERROR':
+                            case 'NotSupportedError':
+                                __log('<a href="http://www.it165.net/edu/ewl/" target="_blank" class="keylink">浏览器</a>不支持硬件设备。');
+                                break;
+                            case 'MANDATORY_UNSATISFIED_ERROR':
+                            case 'MandatoryUnsatisfiedError':
+                                __log('无法发现指定的硬件设备。');
+                                break;
+                            default:
+                                __log('无法打开麦克风。异常信息:' + (error.code || error.name));
+                                break;
+                        }
+                    });
+                }
+            }
+        });
+
+
+        window.onload = function init() {
+            try {
+                // webkit shim
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+                //if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                //    navigator.getUserMedia = navigator.mediaDevices.getUserMedia;
+                //    __log('navigator.mediaDevices.getUserMedia');
+                //}
+                window.URL = window.URL || window.webkitURL;
+
+                if ((navigator.mediaDevices != null) && (navigator.mediaDevices.enumerateDevices != null)) {
+                    navigator.mediaDevices.enumerateDevices().then(onGotDevices)["catch"](function (err) {
+                        return onError("Could not enumerate audio devices: " + err);
+                    });
+                } else {
+                    $('#sel_devices').html('<option value="no-input" selected>(No input)</option><option value="default-audio-input">Default audio input</option>');
+                }
+
+                audioContext = new AudioContext;
+                if (audioContext.createScriptProcessor == null) {
+                    audioContext.createScriptProcessor = audioContext.createJavaScriptNode;
+                }
+
+                __log('Audio context set up.');
+                __log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+
+
+
+            } catch (e) {
+                __log(e.message);
+            }
+
+        };
+    </script>
+</body>
+</html>

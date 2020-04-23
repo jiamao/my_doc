@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+<title>理财通</title>
+<style>
+	html,body{
+		color: #9DA0AD;
+		background-color: #272822;
+	}
+</style>
+</head>
+<body>
+<span>请选择音频文件</span> <br />
+<input type="file" id="my_sound" /> <br />
+<span id="txtstatus"></span><br />
+<canvas id='sound_canvas' width="600" height="400"></canvas>
+<script>
+	(function(){
+		var soundCanvas = document.getElementById('sound_canvas');
+		soundCanvas.width = window.innerWidth * 0.95;
+		var canvasContext = soundCanvas.getContext('2d');
+		//定义一个渐变样式用于画图
+		gradient = canvasContext.createLinearGradient(0, 0, 0, soundCanvas.height);
+		gradient.addColorStop(1, '#0D8E21');
+		gradient.addColorStop(0.5, '#B2F70D');
+		gradient.addColorStop(0, '#D6FA03');
+		canvasContext.fillStyle = gradient;
+
+		window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
+		//动画用到
+        window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame;
+
+		if(typeof window.AudioContext == 'undefined') {
+			alert('不支持');
+			return;
+		}
+		var audioContext=new window.AudioContext();
+		//音频容器
+		var audioBufferSouceNode,analyser;	
+
+		//读取音频文件
+		window.readSound = function(file) {
+			var fr = new FileReader();
+			fr.onload = function(e) {
+				//解码文件
+				decodeAudio(e.target.result);
+			}
+			fr.readAsArrayBuffer(file);
+		}
+
+		//解码
+		function decodeAudio(data) {
+				log('解码中...');
+			audioContext.decodeAudioData(data, function(buffer){
+				log('解码成功');
+				play(buffer); //播放
+			}, function(ex){
+				alert('解码失败,' + e.message);
+			});
+		}
+
+		//播放
+		function play(buffer) {		
+			//如果 已在播放，则中止
+			if(audioBufferSouceNode) {
+				audioBufferSouceNode.stop();
+			}
+			audioBufferSouceNode = audioContext.createBufferSource();	
+			audioBufferSouceNode.buffer = buffer;
+			////连接到扬声器
+			//audioBufferSouceNode.connect(audioContext.destination);
+			//处理频谱
+			createAnalyser(audioBufferSouceNode);
+			//开始播放
+			audioBufferSouceNode.start(0);
+		}
+
+		//生成频谱分析
+		function createAnalyser(souceNode) {
+			if(analyser) {				
+				analyser.disconnect(audioContext.destination);
+			}
+			//频谱能量分析器
+			analyser = audioContext.createAnalyser();
+			souceNode.connect(analyser);
+			//扬声器
+			analyser.connect(audioContext.destination);
+
+			drawAnalyserData(analyser);//绘制漂亮的频谱图
+		}
+
+		//画频谱能量图
+		function drawAnalyserData() {
+			var ch = soundCanvas.height;
+			var cw = soundCanvas.width;
+			canvasContext.clearRect(0, 0, cw, ch); //清理画布准备画画
+			//获取频率能量值
+			var array = new Uint8Array(analyser.frequencyBinCount);
+			analyser.getByteFrequencyData(array);
+			//每个柱子的宽度
+			var w = soundCanvas.width / array.length;
+			for(var i=0;i<array.length;i++) {
+				var x = i * w;
+				var y = ch - array[i];
+				canvasContext.fillRect(x, y, w, array[i]);
+			}
+
+			window.requestAnimationFrame(drawAnalyserData, analyser);
+		}
+
+		bindEvent();
+
+		log('加载中(kalimba.mp3)...');
+		loadSoundFile('kalimba.mp3', function(buffer) {
+			decodeAudio(buffer);
+		});
+	})();
+
+	function bindEvent() {
+		//选择文件
+		document.getElementById('my_sound').onchange = function(e) {
+			if(this.files.length) {
+				var file = this.files[0];
+				window.readSound(file);
+			}
+		}
+	}
+	//获取远程音频文件
+	function loadSoundFile(url,callback) {
+	    var request = new XMLHttpRequest(); 
+	    request.open('GET', url, true); 
+	    request.responseType = 'arraybuffer'; 
+	    //音频获取
+	    request.onload = function() {
+	        var arraybuffer = request.response;
+	        callback && callback(arraybuffer);
+	    }
+	    request.send();
+	}
+
+	function log(msg) {
+		document.getElementById('txtstatus').innerHTML = msg;
+	}
+</script>
+</body>
+</html>

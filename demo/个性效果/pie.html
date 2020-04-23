@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+<meta content="yes" name="apple-mobile-web-app-capable">
+<meta content="black" name="apple-mobile-web-app-status-bar-style">
+<meta content="telephone=no" name="format-detection">
+<meta content="email=no" name="format-detection">
+<title>腾讯理财通</title>
+<script>
+	/**
+	 * 饼图
+	 * //this.option.isHollow 是否空心
+	 *	//this.option.serieStyle
+	 */
+	 function pie(option) {
+	 	//初始化配置
+		this.option = option||{};
+		if(!this.option.canvas && this.option.container) {
+			this.option.canvas = document.createElement('canvas');
+			this.option.container.appendChild(this.option.canvas);
+		}
+		this.canvas = this.option.canvas;
+		if(this.option.width) this.canvas.width = this.option.width;
+		if(this.option.height) this.canvas.height = this.option.height;
+
+		//边界
+		this.option.marginLeft = this.option.marginLeft||8;
+		this.option.marginTop = this.option.marginTop||8;
+		this.option.marginRight = this.option.marginRight||8;
+		this.option.marginBottom = this.option.marginBottom||8;
+
+		//图颜 色
+		this.option.serieStyle = this.option.serieStyle|| //各图的样式
+			[
+					{
+						'strokeStyle': '#fa7d7d',
+						'fillStyle': '#fa7d7d'
+					},
+					{
+						'strokeStyle': '#42a4ff',
+						'fillStyle': '#42a4ff'
+					},
+					{
+						'strokeStyle': '#007aff',
+						'fillStyle': '#007aff'
+					}
+				];
+
+		this.context = this.canvas.getContext('2d');		
+	 }
+
+	 /**
+	  * 画饼图
+	  */
+	 pie.prototype.draw = function(data) {
+	 	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	 	if(!data || !data.length) return;
+	 	//边柜
+		this.bounds = {
+			x: this.option.marginLeft,
+			y: this.option.marginTop,
+			width: this.canvas.width - this.option.marginLeft - this.option.marginRight,
+			height: this.canvas.height - this.option.marginTop - this.option.marginBottom
+		};
+		//计算中心点
+		this.center = {
+			x: this.bounds.width / 2 + this.bounds.x,
+			y: this.bounds.height / 2 + this.bounds.y
+		};
+		//取最小边做半径
+		this.radius = Math.min(this.bounds.width, this.bounds.height) / 2;
+
+		var self = this;
+	 	var series = this.createSeries(data);//生成饼块	
+	 	var serieCount = series.length;
+	 	series.map(function(s) {			
+			self.drawArc(s, self.option.animate, function(serie) {
+				serieCount--;
+				//已经完全画完
+				if(serieCount === 0 && self.option.animate) {
+					//动画完毕后，全清除重画一次，为了消除动画造成的剧齿
+					self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
+					series.map(function(s) {	
+						self.drawArc(s, false);
+					});
+				}
+			});			
+	 	});
+	 }
+
+	 //动画方式画孤
+	 pie.prototype.drawArc = function(serie, animate, callback) { 	
+
+		var r = this.radius;		
+	 	//如果是空心饼 isHollow = true
+		//如果有宽度，则需要减去饼宽的一半
+		if(this.option.isHollow && this.option.arcWidth) {
+			r -= this.option.arcWidth / 2;
+			this.context['lineWidth'] = this.option.arcWidth;
+		}
+
+		//圆狐起始点
+		//var startPointX = this.center.x + r * Math.cos(serie.endRadio);
+		//var startPointY = this.center.y + r * Math.sin(serie.endRadio);
+
+		//如果需要以动画方式展现，则按一定角度比画
+		if(animate) {
+			var start = serie.startRadio;
+			var end = start;
+			var step = serie.radio / 30;
+			var self = this;
+			function stepDraw() {
+				self.context.save();
+				//设置样式
+				self.setStyle(serie.style, r);
+
+				end -= step;
+				if(end < serie.endRadio) end = serie.endRadio;
+
+				self.context.beginPath();
+
+				if(!self.option.isHollow) {
+					self.context.moveTo(self.center.x,self.center.y);
+
+					self.context.arc(self.center.x,self.center.y, r, start, end, true);
+
+					self.context.stroke();
+					self.context.fill();
+					self.context.closePath();
+				}
+				else {
+					//counterclockwise 规定应该逆时针还是顺时针绘图。False = 顺时针，true = 逆时针。
+					self.context.arc(self.center.x,self.center.y, r, start, end, true);
+					self.context.stroke();
+				}
+				self.context.restore();
+
+				if(end > serie.endRadio) {						
+					//start = end;// + 0.004;
+					(window.requestAnimFrame||window.setTimeout)(stepDraw, 30);
+				}
+				else {
+					callback && callback(serie);
+				}
+			}
+			stepDraw();
+		}
+		else {
+			this.context.save();
+			//设置样式
+			this.setStyle(serie.style, r);
+
+			this.context.beginPath();
+			if(!this.option.isHollow) {
+				this.context.moveTo(this.center.x,this.center.y);
+				//this.context.lineTo(startPointX, startPointY);
+
+				this.context.arc(this.center.x,this.center.y, r, serie.startRadio, serie.endRadio, true);
+
+				//var endPointX = this.center.x + r * Math.cos(serie.startRadio);
+				//var endPointY = this.center.y + r * Math.sin(serie.startRadio);
+				//this.context.moveTo(endPointX, endPointY);
+				//this.context.lineTo(this.center.x,this.center.y);
+
+				this.context.stroke();
+				this.context.fill();
+				this.context.closePath();
+			}
+			else {
+				//counterclockwise 规定应该逆时针还是顺时针绘图。False = 顺时针，true = 逆时针。
+				this.context.arc(this.center.x,this.center.y, r, serie.startRadio, serie.endRadio, true);
+				this.context.stroke();
+			}
+			this.context.restore();
+			callback && callback(serie);
+		}
+	 }
+
+	 //设置饼 的样式
+	 pie.prototype.setStyle = function(style, r) {
+	 	if(!style || typeof style != 'object') return;
+		for(var k in style) {
+			var s = style[k];
+			//如果指定了渐变
+			if(k == 'fillStyle' && typeof s == 'object') {	
+				//如果是发散渐变
+				if(s.radialGradient) {
+					var grd = this.context.createRadialGradient(this.center.x, this.center.y, 0, this.center.x, this.center.y, r);
+					//指定渐变color stop
+					for(var p in s.radialGradient) {
+						var c = s.radialGradient[p];
+						grd.addColorStop(p, c);					
+					}
+					this.context.fillStyle = grd;
+				}			
+				else {
+					this.context.fillStyle = grd;					
+				}
+			}
+			else this.context[k] = style[k];
+		}
+	 }
+
+	 //生成各维度的数据
+	 pie.prototype.createSeries = function(data) {
+	 	//生成图形
+		this.series = [];
+		var sum = 0; //总和
+		//角度间隔
+		var stepRadio = this.option.stepRadio || 0; //默认0度,
+		var allRadio = Math.PI * 2;
+
+		for(var i=0;i<data.length;i++) {
+			var serie = {
+				value: Number(data[i])||0
+			};
+			sum += serie.value;
+
+			//线条颜色
+			var index = i%this.option.serieStyle.length;
+			serie.style = this.option.serieStyle[index]||{};			
+			this.series.push(serie);
+
+			//大于0的就需要跟其它段有个间隔
+			//空心圆的话
+			if(serie.value > 0) {
+				allRadio -= stepRadio;
+			}
+		}
+		//计算占比
+		//画圆角度是顺时钟算的，，我们要逆时针画，则从大角度开始起减
+		var startRadio = Math.PI * 1.5;//从90度开始画
+		
+		this.series.map(function(s) {
+			s.per = s.value / sum;
+			//计算每个饼点的角度, 连接处需要空一块，
+			s.startRadio = startRadio;
+			s.radio = allRadio * s.per;//2是为了每块点一半缩进
+			s.endRadio = s.startRadio - s.radio;
+			//下一个就要推后一段区域
+			startRadio = s.endRadio - (s.per>0?stepRadio:0);//如果占比为0，则不需要加间隔
+		});
+		return this.series;
+	 }
+</script>
+</head>
+<body>
+<canvas id="mycanvas1" style="margin: 2px;"  width="300" height="300"></canvas>
+<canvas id="mycanvas2" style="margin: 2px;"  width="300" height="300"></canvas>
+<script>
+//空心
+	var canvas1 = document.getElementById('mycanvas1');
+	//放大一倍再缩小，减少剧齿
+	var w = canvas1.width/2;
+	var h = canvas1.height/2;
+	canvas1.style.width = w + 'px';
+	canvas1.style.height = h + 'px'
+	var mypie1 = new pie({
+		canvas: canvas1,
+		width: w * 2,
+		height: h * 2,			
+		marginLeft: 0,
+		marginTop: 0,
+		marginRight: 0,
+		marginBottom: 0,			
+		//各图的样式
+		serieStyle: [
+				{
+					'strokeStyle': '#fa7d7d',
+					'fillStyle': '#fa7d7d'
+					//,'shadowBlur': 5,
+					//'shadowOffsetX': 0,
+					//'shadowOffsetY': 0,
+					//'shadowColor': '#fa7d7d'
+				},
+				{
+					'strokeStyle': '#42a4ff',
+					'fillStyle': '#42a4ff'
+					//,'shadowBlur': 5,
+					//'shadowOffsetX': 0,
+					//'shadowOffsetY': 0,
+					//'shadowColor': '#42a4ff'
+				},
+				{
+					'strokeStyle': '#007aff',
+					'fillStyle': '#007aff'
+					//,'shadowBlur': 5,
+					//'shadowOffsetX': 0,
+					//'shadowOffsetY': 0,
+					//'shadowColor': '#007aff'
+				}
+			],
+		animate: true, //动画
+		isHollow: true, //空心画法
+		arcWidth: 40, //孤宽度
+		stepRadio: Math.PI / 50 //角度间隔
+	});
+	mypie1.draw([30, 52, 44]);
+
+
+//实心
+	var canvas2 = document.getElementById('mycanvas2');
+	//放大一倍再缩小，减少剧齿
+	var w = canvas2.width/2;
+	var h = canvas2.height/2;
+	canvas2.style.width = w + 'px';
+	canvas2.style.height = h + 'px'
+	var mypie2 = new pie({
+		canvas: canvas2,
+		width: w * 2,
+		height: h * 2,			
+		marginLeft: 0,
+		marginTop: 0,
+		marginRight: 0,
+		marginBottom: 0,			
+		//各图的样式
+		serieStyle: [
+				{
+					'strokeStyle': '#fa7d7d',
+					//'fillStyle': '#fa7d7d', //要使用纯色就用这个
+					'fillStyle': {
+								'radialGradient': {
+									'0': '#fa7d7d',
+									'0.5': '#F2ADB2',
+									'1': '#fa7d7d'
+								}	
+							}			
+				},
+				{
+					'strokeStyle': '#42a4ff',
+					//'fillStyle': '#42a4ff',
+					'fillStyle': {
+								'radialGradient': {
+									'0': '#42a4ff',
+									'0.5': '#62A2E0',
+									'1': '#0D64B7'
+								}	
+							}
+				},
+				{
+					'strokeStyle': '#007aff',
+					//'fillStyle': '#007aff',
+					'fillStyle': {
+								'radialGradient': {
+									'0': '#007aff',
+									'0.5': '#6CA7E8',
+									'1': '#054893'
+								}	
+							}
+				}
+			],
+		animate: true //动画
+	});
+	mypie2.draw([30, 52, 44]);
+</script>
+</body>
+</html>
