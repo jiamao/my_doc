@@ -1,0 +1,20 @@
+{
+    "name": "ooo",   
+    "scripts": {
+      "build": "tsc ./main.ts -t es5 && node main.js",
+      "clean": "ets clean"
+    },
+    "dependencies": {
+      "tslib": "^1.11.2"
+    },
+    "devDependencies": {
+      "typescript": "^3.8.3"
+    },
+    "engines": {
+      "node": ">=8.0.0"
+    },
+    "ci": {
+      "version": "8, 10"
+    }
+  }
+  

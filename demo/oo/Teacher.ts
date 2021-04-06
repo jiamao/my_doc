@@ -1,22 +1,18 @@
 
 import { Person } from './Person';
 
-export default class Teacher<T extends Person> extends Person {
-    constructor(base:T) {
+export default class Teacher extends Person {
+    constructor() {
         super();
-        this.base = base;
     }
-
-    base?: T;
 
     say(words: string) {
-        super.say(`i am teacher`);
-        if(this.base) {
-            this.base?.say(words);
-        }
-        else {
-            super.say(words);
-        }
+        super.say(`i am teacher`);        
+        super.say(words);
     }
 
+
+    eat(food: any) {
+        console.log(`eat ${food}`);
+    }
 }

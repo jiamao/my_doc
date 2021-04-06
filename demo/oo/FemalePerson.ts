@@ -9,7 +9,11 @@ export default class FemalePerson extends Person {
     }
 
     say(words: string) {
-        super.say(`i am ${this.sex} person`);
+        super.say(`i am ${this.sex}`);
         super.say(words);
+    }
+
+    eat(food: any) {
+        console.log(`eat ${food}`);
     }
 }

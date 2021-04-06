@@ -2,7 +2,7 @@
 import { ESex } from './Enums';
 
 
-export default class Person {
+export default abstract class Person {
     constructor(sex: ESex = ESex.Male) {
         this._sex = sex;
     }
@@ -20,6 +20,9 @@ export default class Person {
     say(words: string) {
         console.log(words);
     }
+
+    // 抽象方法
+    abstract eat(food: any): any;
 }
 
 export {
