@@ -1,5 +1,7 @@
 
-import { ESex, Person } from './Person';
+
+import { ESex } from './Enums';
+import { Person } from './Person';
 
 export default class FemalePerson extends Person {
     constructor() {

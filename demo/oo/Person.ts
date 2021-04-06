@@ -1,9 +1,6 @@
 
+import { ESex } from './Enums';
 
-enum ESex {
-    Male = 'male',
-    Female = 'female'
-}
 
 export default class Person {
     constructor(sex: ESex = ESex.Male) {
@@ -26,6 +23,5 @@ export default class Person {
 }
 
 export {
-    ESex,
     Person
 }
