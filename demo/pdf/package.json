@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "pdf-lib": "^1.17.1",
+    "pdf2html": "^3.1.0",
+    "pdf2md": "^1.0.2",
+    "pdfjs-dist": "^3.5.141"
+  }
+}
