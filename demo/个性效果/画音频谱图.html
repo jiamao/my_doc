@@ -56,8 +56,8 @@
 			audioContext.decodeAudioData(data, function(buffer){
 				log('解码成功');
 				play(buffer); //播放
-			}, function(ex){
-				alert('解码失败,' + e.message);
+			}, function(e){
+				log('解码失败,' + e.message);
 			});
 		}
 
@@ -112,8 +112,8 @@
 
 		bindEvent();
 
-		log('加载中(kalimba.mp3)...');
-		loadSoundFile('kalimba.mp3', function(buffer) {
+		log('加载中(阿衣莫-阿吉太组合.mp3)...');
+		loadSoundFile('阿衣莫-阿吉太组合.mp3', function(buffer) {
 			decodeAudio(buffer);
 		});
 	})();
@@ -137,6 +137,9 @@
 	        var arraybuffer = request.response;
 	        callback && callback(arraybuffer);
 	    }
+		request.onerror = function(e) {
+			log('request ' + (e.message || e.type));
+		}
 	    request.send();
 	}
 
