@@ -28,16 +28,25 @@
         // init
         let width = window.innerWidth, height = window.innerHeight;
         const camera = new THREE.PerspectiveCamera( 50, width / height, 0.1, 1000 );
-        camera.position.z = 50; 
+        camera.position.z = 100; 
         camera.position.x = 0;
         camera.position.y = 0;
 
-        camera.lookAt(0, -10);
+        camera.lookAt(0, 0);
 
         const backgroundColor = 0xf1f1f1;
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(backgroundColor);
+
+        let stacy_txt = new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy.jpg');
+        stacy_txt.flipY = false; // we flip the texture so that its the right way up
+        const stacy_mtl = new THREE.MeshPhongMaterial({
+            map: stacy_txt,
+            color: 0xffffff,
+            skinning: true
+        });
+
         //雾化的模糊效果
         //scene.fog = new THREE.Fog(backgroundColor, 60, 100);
 
@@ -47,21 +56,33 @@
         scene.add(hemiLight);
 
         let d = 8.25;
+        const lightPosition = [-20, 10, 30];
         let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
-        dirLight.position.set(-8, 12, 8);
+        dirLight.position.set(...lightPosition);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
-        dirLight.shadow.camera.near = 0.1;
+        //dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+        /*dirLight.shadow.camera.near = 0.1;
         dirLight.shadow.camera.far = 1500;
         dirLight.shadow.camera.left = d * -1;
         dirLight.shadow.camera.right = d;
         dirLight.shadow.camera.top = d;
-        dirLight.shadow.camera.bottom = d * -1;
+        dirLight.shadow.camera.bottom = d * -1;*/
         // Add directional Light to scene
-        scene.add(dirLight);
+       scene.add(dirLight);
+
+       // 创建一个球体几何体
+        const ballGeometry = new THREE.SphereGeometry(1, 32, 32);
+        // 创建材质
+        const BallMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        // 使用几何体和材质创建球体
+        const sphere = new THREE.Mesh(ballGeometry, BallMaterial);
+        sphere.position.set(...lightPosition);
+        sphere.material = stacy_mtl;
+        // 将球体添加到场景中
+        scene.add(sphere);
 
         // Floor
-        const floorGeometry = new THREE.PlaneGeometry(100, 100, 500, 500);
+        const floorGeometry = new THREE.PlaneGeometry(100, 100, 300, 300);
         const floorMaterial = new THREE.MeshPhongMaterial({
             color: new THREE.Color("#ccc"),
             wireframe: true,
@@ -74,12 +95,25 @@
         floor.position.y = -11;
         scene.add(floor);
 
+        
+
+        
+        //floor.material = stacy_mtl;
+
         const geometry = new THREE.BoxGeometry( 1, 1, 1 );
         const material = new THREE.MeshNormalMaterial();
 
         const mesh = new THREE.Mesh( geometry, material );
-        mesh.position.x = -10;
+        mesh.position.x = -20;
         mesh.position.y = 5;
+
+        mesh.traverse(o => {
+            if (o.isMesh) {
+                o.castShadow = true;
+                o.receiveShadow = true;
+            }
+        });
+
         scene.add( mesh );
 
         const renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -91,13 +125,7 @@
         renderer.setAnimationLoop( animation );
         document.body.appendChild( renderer.domElement );
 
-        let stacy_txt = new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy.jpg');
-        stacy_txt.flipY = false; // we flip the texture so that its the right way up
-        const stacy_mtl = new THREE.MeshPhongMaterial({
-            map: stacy_txt,
-            color: 0xffffff,
-            skinning: true
-        });
+        
 
         // 加载人物模型
         const loader = new GLTFLoader();
@@ -120,7 +148,7 @@
                     //o.material = stacy_mtl;
                 }
             });
-            myModel.scale.set(7, 7, 7);
+            myModel.scale.set(15, 15, 15);
             myModel.position.y = -11;
 
             scene.add(myModel);
