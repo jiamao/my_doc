@@ -24,6 +24,7 @@
         /// <reference path="./node_modules/@types/three/index.d.ts" />
         import * as THREE from './node_modules/three/src/Three.js';
         import { GLTFLoader } from './lib/threejs/jsm/loaders/GLTFLoader.js';
+        import { OrbitControls } from './lib/threejs/jsm/controls/OrbitControls.js';
        
         // init
         let width = window.innerWidth, height = window.innerHeight;
@@ -38,6 +39,7 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(backgroundColor);
+
 
         let stacy_txt = new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/stacy.jpg');
         stacy_txt.flipY = false; // we flip the texture so that its the right way up
@@ -55,27 +57,29 @@
         // Add hemisphere light to scene
         scene.add(hemiLight);
 
-        let d = 8.25;
-        const lightPosition = [-20, 10, 30];
+        const d = 80.25;
+        const lightPosition = [-40, 25, 30];
         let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
         dirLight.position.set(...lightPosition);
         dirLight.castShadow = true;
-        //dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
-        /*dirLight.shadow.camera.near = 0.1;
-        dirLight.shadow.camera.far = 1500;
+        dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+        dirLight.shadow.camera.near = 0.1;
+        dirLight.shadow.camera.far = 15000;
         dirLight.shadow.camera.left = d * -1;
         dirLight.shadow.camera.right = d;
         dirLight.shadow.camera.top = d;
-        dirLight.shadow.camera.bottom = d * -1;*/
+        dirLight.shadow.camera.bottom = d * -1;
         // Add directional Light to scene
        scene.add(dirLight);
 
        // 创建一个球体几何体
-        const ballGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const ballGeometry = new THREE.SphereGeometry(5, 25, 25);
         // 创建材质
-        const BallMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        const BallMaterial = new THREE.MeshBasicMaterial({
+            map: stacy_txt
+        });
         // 使用几何体和材质创建球体
-        const sphere = new THREE.Mesh(ballGeometry, BallMaterial);
+        const sphere = new THREE.Mesh(ballGeometry, stacy_mtl);
         sphere.position.set(...lightPosition);
         sphere.material = stacy_mtl;
         // 将球体添加到场景中
@@ -124,6 +128,8 @@
 
         renderer.setAnimationLoop( animation );
         document.body.appendChild( renderer.domElement );
+
+        const control = new OrbitControls(camera, renderer.domElement);
 
         
 
@@ -192,6 +198,9 @@
                 //myModel.rotation.x = mesh.rotation.x;
                 myModel.rotation.y = mesh.rotation.y;
             }
+
+            sphere.rotation.y = mesh.rotation.y;
+            sphere.rotation.x = mesh.rotation.x;
 
             
             renderer.render( scene, camera );
