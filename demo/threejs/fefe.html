@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+	<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<style>
+		html,body{
+			margin:0;
+			padding: 0;
+		}
+		canvas {
+			cursor: pointer;
+		}
+		#mycanvas_container{
+			overflow: hidden;		
+		}		
+	</style>
+	</head>
+	<body>
+		
+	</body>
+    <!--<script type="module" src="node_modules/three/build/three.min.js"></script>-->
+    <script type="module">
+        /// <reference path="./node_modules/@types/three/index.d.ts" />
+        import * as THREE from './node_modules/three/src/Three.js';
+        import { GLTFLoader } from './lib/threejs/jsm/loaders/GLTFLoader.js';
+       
+        // init
+        let width = window.innerWidth, height = window.innerHeight;
+        const camera = new THREE.PerspectiveCamera( 50, width / height, 0.1, 1000 );
+        camera.position.z = 30; 
+        camera.position.x = 0;
+        camera.position.y = -3;
+
+        const backgroundColor = 0xf1f1f1;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(backgroundColor);
+        //雾化的模糊效果
+        //scene.fog = new THREE.Fog(backgroundColor, 60, 100);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.61);
+        hemiLight.position.set(0, 50, 0);
+        // Add hemisphere light to scene
+        scene.add(hemiLight);
+
+        let d = 8.25;
+        let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
+        dirLight.position.set(-8, 12, 8);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+        dirLight.shadow.camera.near = 0.1;
+        dirLight.shadow.camera.far = 1500;
+        dirLight.shadow.camera.left = d * -1;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = d * -1;
+        // Add directional Light to scene
+        scene.add(dirLight);
+
+        // Floor
+        const floorGeometry = new THREE.PlaneGeometry(5000, 5000, 1000, 1000);
+        const floorMaterial = new THREE.MeshPhongMaterial({
+            color: new THREE.Color("#026487"),
+            wireframe: true,
+            shininess: 0,
+        });
+
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -0.5 * Math.PI; // This is 90 degrees by the way
+        floor.receiveShadow = true;
+        floor.position.y = -11;
+        scene.add(floor);
+
+        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+        const material = new THREE.MeshNormalMaterial();
+
+        const mesh = new THREE.Mesh( geometry, material );
+        scene.add( mesh );
+53
+        const renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setSize( width, height );
+        // 人物对象能投射阴影
+        renderer.shadowMap.enabled = true;
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        renderer.setAnimationLoop( animation );
+        document.body.appendChild( renderer.domElement );
+
+        const loader = new GLTFLoader();
+        loader.load('model/fefe.glb', (gltf) => {
+            const model = gltf.scene;
+            const fileAnis = gltf.animations;
+            scene.add(model);
+        }, undefined, (err) => {
+            console.error(err);
+        });
+
+       /* window.onresize = (e) => {
+            width = window.innerWidth, height = window.innerHeight;
+            camera.aspect = width / height;
+            renderer.setSize( width, height, false );
+        }*/
+        // 检查是否需要更新大小
+        function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            let canvasPixelWidth = canvas.width / window.devicePixelRatio;
+            let canvasPixelHeight = canvas.height / window.devicePixelRatio;
+
+            const needResize =
+                canvasPixelWidth !== width || canvasPixelHeight !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+        // animation
+
+        function animation( time ) {
+            if (resizeRendererToDisplaySize(renderer)) {
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+            }
+            mesh.rotation.x = time / 2000;
+            mesh.rotation.y = time / 1000;
+            //camera.lookAt(0, 0)
+            renderer.render( scene, camera );
+
+        }
+	</script>
+</html>
