@@ -43,7 +43,7 @@
         scene.background = new THREE.Color(backgroundColor);
 
 
-        let stacy_txt = new THREE.TextureLoader().load('model/football.jpg');
+        const stacy_txt = new THREE.TextureLoader().load('model/football.jpg');
         stacy_txt.flipY = false; // we flip the texture so that its the right way up
         const stacy_mtl = new THREE.MeshPhongMaterial({
             map: stacy_txt,
@@ -59,13 +59,13 @@
         // Add hemisphere light to scene
         scene.add(hemiLight);
 
-        const d = 80.25;
-        const lightPosition = [-40, 25, 30];
+        const d = 800.25;
+        const lightPosition = [-40, 40, 30];
         let dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
         dirLight.position.set(...lightPosition);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
-        dirLight.shadow.camera.near = 0.1;
+        dirLight.shadow.mapSize = new THREE.Vector2(10240, 10240);
+        dirLight.shadow.camera.near = 10;
         dirLight.shadow.camera.far = 15000;
         dirLight.shadow.camera.left = d * -1;
         dirLight.shadow.camera.right = d;
@@ -143,36 +143,20 @@
 
         // 加载人物模型
         const loader = new GLTFLoader();
+
         let myModel = null;
-        loader.load('model/fefe.glb', (gltf) => {
+        loadObj('model/fefe.glb', (gltf)=>{
             myModel = gltf.scene;
             const fileAnis = gltf.animations;
             console.log(fileAnis);
-
-            
-
-            // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。
-            myModel.traverse(o => {
-                if (o.isBone) {
-                    console.log(o.name);
-                }
-                if (o.isMesh) {
-                    o.castShadow = true;
-                    o.receiveShadow = true;
-                    //o.material = stacy_mtl;
-                }
-            });
             myModel.scale.set(15, 15, 15);
             myModel.position.y = -11;
-
             scene.add(myModel);
-        }, undefined, (err) => {
-            console.error(err);
         });
         
         
         let myMixer = null;
-        loader.load('model/horseridingnyi.glb', (gltf) => {
+        loadObj('model/horseridingnyi.glb', (gltf) => {
             const model = gltf.scene;
             const fileAnis = gltf.animations;
             myMixer = new THREE.AnimationMixer(model);
@@ -183,25 +167,12 @@
             //aniAction.setLoop(true, 1);
             aniAction.play();
 
-            // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。
-            model.traverse(o => {
-                
-                if (o.isMesh) {
-                    o.castShadow = true;
-                    o.receiveShadow = true;
-                    //o.material = stacy_mtl;
-                }
-            });
             //model.scale.set(15, 15, 15);
             model.position.x = -40;
             model.position.y = -11;
             model.position.z = -80;
 
             scene.add(model);
-        }, (e)=>{
-            console.log(e);
-        }, (err) => {
-            console.error(err);
         });
 
        /* window.onresize = (e) => {
@@ -251,6 +222,28 @@
             
             renderer.render( scene, camera );
 
+        }
+
+        function loadObj(url, success, progress) {
+            loader.load(url, (gltf) => {
+                // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。
+                gltf.scene.traverse(o => {
+                    if (o.isBone) {
+                        console.log(o.name);
+                    }
+                    if (o.isMesh) {
+                        o.castShadow = true;
+                        o.receiveShadow = true;
+                        //o.material = stacy_mtl;
+                    }
+                });
+
+                success && success(gltf);
+            }, (e)=>{
+                progress && progress(e);
+            }, (err) => {
+                console.error(err);
+            });
         }
 
         // 画坐标
