@@ -154,7 +154,12 @@
             scene.add(myModel);
         });
         
-        
+        loadObj('model/yz.glb', (gltf)=>{
+            gltf.scene.scale.set(15, 15, 15);
+            gltf.scene.position.set(-20, -11, 10);
+            scene.add(gltf.scene);
+        });
+
         let myMixer = null;
         loadObj('model/horseridingnyi.glb', (gltf) => {
             const model = gltf.scene;
