@@ -66,20 +66,20 @@
         let myModel = null;
         let myHead = null;
         let myTalkingAction = null;
-        app.loadObj('https://jt-ai-draw-1301270551.cos.ap-guangzhou.myqcloud.com/obj/kevin.glb', (obj)=>{
+        app.loadObj('https://sms.ciccten.com/vhuman/data/talking/kevin.fbx', (obj)=>{
+            
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
-            const fileAnis = obj.animations;
-            console.log(fileAnis);
-            //myModel.scale.set(0.1, 0.1, 0.1);
-            myModel.scale.set(15, 15, 15);
+            myModel.scale.set(0.15, 0.15, 0.15);
+            //myModel.scale.set(15, 15, 15);
             myModel.position.y = -11;
-           // myModel.rotation.x = -0.5 * Math.PI;
+            myModel.position.z = 5;
+            //myModel.rotation.x = -0.5 * Math.PI;
             app.scene.add(myModel);
-
+            
             myMixer = new THREE.AnimationMixer(myModel);
 
-            const clip = fileAnis[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
+            const clip = obj.animations[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
             if (clip) {
                 myTalkingAction = myMixer.clipAction(clip)
                 myTalkingAction.setEffectiveTimeScale(1)

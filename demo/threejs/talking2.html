@@ -1,0 +1,265 @@
+<!doctype html>
+<html>
+	<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<style>
+		html,body{
+			margin:0;
+			padding: 0;
+            overflow: hidden;
+		}
+		canvas {
+			cursor: pointer;
+		}
+        #loading {
+            position: fixed;
+            top: 40%;
+            left: 25%;
+            width: 50%;
+        }
+        #loading progress {
+            width: 100%;
+        }	
+	</style>
+	</head>
+	<body>
+		<canvas id="app"></canvas>
+        <div id="loading">
+            <progress id="loading_progress" value="0" max="100"></progress>
+        </div>
+        <div>
+            <button id="btn_talk" style="display: none; position: fixed; bottom: 100px; left: 48%;">说话</button>
+        </div>
+	</body>
+    <!--<script type="module" src="node_modules/three/build/three.min.js"></script>-->
+    <script type="module">
+        /// <reference path="./node_modules/@types/three/index.d.ts" />
+        import { THREE,
+            createApp,
+        } from './lib/threejs/dist/my-threejs.esm.js';    
+        
+        
+       
+        const canvas = document.getElementById('app');
+        // init
+        const width = window.innerWidth, height = window.innerHeight;
+        const app = createApp(canvas, {
+            width,
+            height
+        });
+
+        app.addFloor();
+        app.addLights();
+        app.drawCoord({
+            x: 4,
+            y: -5,
+            z: 35
+        }, 1);
+
+        app.control.addEventListener('change', ()=>{
+
+        });
+
+        
+        let myMixer = null;
+        let myModel = null;
+        let myHead = null;
+        let myTalkingAction = null;
+        app.loadObj('model/kevin.fbx', (obj)=>{
+            
+            //if(obj.clone) obj = obj.clone();
+            myModel = (obj.scene || obj);
+            myModel.scale.set(0.15, 0.15, 0.15);
+            //myModel.scale.set(15, 15, 15);
+            myModel.position.y = -11;
+            myModel.position.z = 5;
+            //myModel.rotation.x = -0.5 * Math.PI;
+            app.scene.add(myModel);
+            
+            myMixer = new THREE.AnimationMixer(myModel);
+
+            const clip = obj.animations[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
+            if (clip) {
+                myTalkingAction = myMixer.clipAction(clip)
+                myTalkingAction.setEffectiveTimeScale(1)
+                myTalkingAction.setEffectiveWeight(1)
+                // 动画播放的方式
+                //myTalkingAction.setLoop(THREE.LoopOnce)
+                myTalkingAction.play();
+
+            }
+        }, (e)=>{
+            const per = (e.loaded / e.total * 100);
+            updateProgress(per);
+        }, (o) => {
+            if (o.isBone) { 
+                //CC_Base_L_Hand
+                
+               // console.log(o.name, o);
+            }
+        });
+        
+        app.loadObj('https://jt-ai-draw-1301270551.cos.ap-guangzhou.myqcloud.com/obj/yz.glb', (gltf)=>{
+            gltf.scene.scale.set(15, 15, 15);
+            gltf.scene.position.set(-10, -11, -10);
+            app.scene.add(gltf.scene);
+        });
+
+        
+        // 检查是否需要更新大小
+        function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            let canvasPixelWidth = canvas.width / window.devicePixelRatio;
+            let canvasPixelHeight = canvas.height / window.devicePixelRatio;
+
+            const needResize =
+                canvasPixelWidth !== width || canvasPixelHeight !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+        // animation
+
+        app.bindAnimation( (time) => {
+            if (resizeRendererToDisplaySize(app.renderer)) {
+                const canvas = app.renderer.domElement;
+                app.camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                app.camera.updateProjectionMatrix();
+            }
+           // const rx = time / 5000;
+            //const ry = time / 2000;
+
+            if(myMixer) {
+                myMixer.update(app.clock.getDelta());
+            }
+
+        });
+
+        function updateProgress(p) {
+            const progress = document.getElementById('loading_progress');
+            progress.value = p;
+
+            if(p >= 100) {
+                setTimeout(()=>{
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('btn_talk').style.display = '';
+                }, 500);
+            }
+        }
+
+        window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
+
+        var audioContext= null;
+		//音频容器
+		var audioBufferSouceNode,analyser, currentAudioData;	
+
+        loadSoundFile('https://jt-ai-draw-1301270551.cos.ap-guangzhou.myqcloud.com/obj/1701177091784.mp3', function(buffer) {
+			currentAudioData = buffer;
+		});
+
+        //解码
+		function decodeAudio(data) {
+            if(!audioContext) {
+                audioContext = new window.AudioContext();
+                audioContext.onstatechange = function(e) {
+                    console.log(e);
+                }
+            }
+				console.log('解码中...');
+                currentAudioData = data.slice(0);
+
+			audioContext.decodeAudioData(data, function(buffer){
+				console.log('解码成功');
+				play(buffer); //播放
+			}, function(e){
+				console.log('解码失败,' + e.message);
+			});
+		}
+
+		//播放
+		function play(buffer) {		
+			//如果 已在播放，则中止
+			if(audioBufferSouceNode) {
+				audioBufferSouceNode.stop();
+			}
+			audioBufferSouceNode = audioContext.createBufferSource();	
+			audioBufferSouceNode.buffer = buffer;
+			////连接到扬声器
+			//audioBufferSouceNode.connect(audioContext.destination);
+			//处理频谱
+			createAnalyser(audioBufferSouceNode);
+			//开始播放
+			audioBufferSouceNode.start(0);
+            if(myTalkingAction) myTalkingAction.reset();
+		}
+
+		//生成频谱分析
+		function createAnalyser(souceNode) {
+			if(analyser) {				
+				analyser.disconnect(audioContext.destination);
+			}
+			//频谱能量分析器
+			analyser = audioContext.createAnalyser();
+			souceNode.connect(analyser);
+			//扬声器
+			analyser.connect(audioContext.destination);
+
+			drawAnalyserData(analyser);//绘制漂亮的频谱图
+		}
+
+		//画频谱能量图
+		function drawAnalyserData() {
+            if(!analyser) return;
+			//获取频率能量值
+			var array = new Uint8Array(analyser.frequencyBinCount);
+			analyser.getByteFrequencyData(array);
+			
+            var total = 0, count=0;
+			for(var i=0;i<array.length;i++) {
+				total += array[i];
+                if(array[i] > 0) count ++;
+			}
+            var per = total / count;
+            console.log('平均谱值：', per);
+            if(myTalkingAction) {
+                if(per > 0) myTalkingAction.play();
+                else myTalkingAction.stop();
+            }
+		}
+
+        app.bindAnimation( (time) => {
+            drawAnalyserData();
+        });
+
+        //获取远程音频文件
+        function loadSoundFile(url,callback) {
+            var request = new XMLHttpRequest(); 
+            request.open('GET', url, true); 
+            request.responseType = 'arraybuffer'; 
+            //音频获取
+            request.onload = function() {
+                var arraybuffer = request.response;
+                callback && callback(arraybuffer);
+            }
+            request.onerror = function(e) {
+                console.log('request ' + (e.message || e.type));
+            }
+            request.send();
+        }
+
+        function bindEvent() {
+            //选择文件
+            document.getElementById('btn_talk').onclick = function(e) {
+                if(currentAudioData) {
+                    decodeAudio(currentAudioData);
+                }
+		    }
+        }
+        bindEvent();
+	</script>
+</html>

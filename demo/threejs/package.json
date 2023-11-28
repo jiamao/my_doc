@@ -52,7 +52,7 @@
         "build": "node build.js",
         "push": "npm publish --registry=https://registry.npmjs.org",
         "dev": "node dev",
-        "fbx2glb": "node_modules/fbx2gltf/bin/Windows_NT/FBX2glTF.exe -i model/talking/kevin.fbx -o model/talking/kevin.glb",        
+        "fbx2glb": "node_modules/fbx2gltf/bin/Windows_NT/FBX2glTF.exe -i model/kevin.fbx -o model/kevin.glb",        
         "zipglb": "gltf-pipeline -i model/talking/kevin.glb -o model/talking/kevin-zip.glb -d"
     },
     "license": "MIT",

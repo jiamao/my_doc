@@ -1,8 +1,8 @@
 import * as THREE from './src/Three.js';
 import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 import { FBXLoader } from './jsm/loaders/FBXLoader.js';
+import { BVHLoader } from './jsm/loaders/BVHLoader.js';
 import { OrbitControls } from './jsm/controls/OrbitControls.js';
-import { TextGeometry } from './jsm/geometries/TextGeometry.js';
 
 
 // 创建实例
@@ -114,12 +114,13 @@ function addFloor(scene=this.scene, option={}) {
 function loadObj(url, success, progress, traverse) {
     let loader = null;
     if(url.toLowerCase().includes('.fbx')) loader = new FBXLoader();
+    else if(url.toLowerCase().includes('.bvh')) loader = new BVHLoader();
     else loader = new GLTFLoader();
 
     loader.load(url, (obj) => {
-        
+        const model = (obj.scene||obj);
         // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。
-        (obj.scene||obj).traverse(o => {
+        model.traverse && model.traverse(o => {
             if(traverse) traverse(o);
             
             if (o.isMesh) {
