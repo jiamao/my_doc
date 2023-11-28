@@ -17,7 +17,13 @@
     },
     "devDependencies": {
         "express": "^4.17.1",
-        "fbx2gltf": "^0.9.7-p1"
+        "fbx2gltf": "^0.9.7-p1",
+        "@babel/core": "^7.10.2",
+        "@babel/plugin-proposal-class-properties": "^7.10.1",
+        "rollup": "^2.16.1",
+        "rollup-plugin-babel": "^4.4.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
+        "rollup-plugin-sourcemaps": "^0.6.2"
     },
     "repository": {
         "type": "git",
@@ -43,7 +49,7 @@
         "example": "example"
     },
     "scripts": {
-        "build": "cd build & npm i & gulp & cd ..",
+        "build": "node build.js",
         "push": "npm publish --registry=https://registry.npmjs.org",
         "dev": "node dev",
         "fbx2glb": "node_modules/fbx2gltf/bin/Windows_NT/FBX2glTF.exe -i model/talking/kevin.fbx -o model/talking/kevin.glb",        
