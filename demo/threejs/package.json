@@ -16,7 +16,8 @@
         "three": "^0.158.0"
     },
     "devDependencies": {
-        "express": "^4.17.1"
+        "express": "^4.17.1",
+        "fbx2gltf": "^0.9.7-p1"
     },
     "repository": {
         "type": "git",
@@ -44,7 +45,9 @@
     "scripts": {
         "build": "cd build & npm i & gulp & cd ..",
         "push": "npm publish --registry=https://registry.npmjs.org",
-        "dev": "node dev"
+        "dev": "node dev",
+        "fbx2glb": "node_modules/fbx2gltf/bin/Windows_NT/FBX2glTF.exe -i model/talking/kevin.fbx -o model/talking/kevin.glb",        
+        "zipglb": "gltf-pipeline -i model/talking/kevin.glb -o model/talking/kevin-zip.glb -d"
     },
     "license": "MIT",
     "config": {

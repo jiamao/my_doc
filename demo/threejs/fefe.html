@@ -24,6 +24,7 @@
         /// <reference path="./node_modules/@types/three/index.d.ts" />
         import * as THREE from './lib/threejs/src/Three.js';
         import { GLTFLoader } from './lib/threejs/jsm/loaders/GLTFLoader.js';
+        import { DRACOLoader } from './lib/threejs/jsm/loaders/DRACOLoader.js';
         import { FBXLoader } from './lib/threejs/jsm/loaders/FBXLoader.js';
         import { OrbitControls } from './lib/threejs/jsm/controls/OrbitControls.js';
         import { TextGeometry } from './lib/threejs/jsm/geometries/TextGeometry.js';
@@ -32,9 +33,9 @@
         // init
         let width = window.innerWidth, height = window.innerHeight;
         const camera = new THREE.PerspectiveCamera( 50, width / height, 0.1, 1000 );
-        camera.position.z = 100; 
+        camera.position.z = 70; 
         camera.position.x = 0;
-        camera.position.y = 50;
+        camera.position.y = 20;
 
         camera.lookAt(0, 0);
 
@@ -144,36 +145,41 @@
 
         // 加载人物模型
         const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(new DRACOLoader());
         const fbxLoader = new FBXLoader();
         let myMixer = null;
         let myModel = null;
         let myHead = null;
-        loadObj('model/kevin.glb', (obj)=>{
+        let myTalkingAction = null;
+        loadObj('model/talking/kevin.fbx', (obj)=>{
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
             const fileAnis = obj.animations;
             console.log(fileAnis);
-            myModel.scale.set(0.3, 0.3, 0.3);
+            myModel.scale.set(0.2, 0.2, 0.2);
             myModel.position.y = -11;
+            myModel.rotation.x = -0.5 * Math.PI;
             scene.add(myModel);
 
             myMixer = new THREE.AnimationMixer(myModel);
 
             const clip = fileAnis[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
             if (clip) {
-                const animateClipAction = myMixer.clipAction(clip)
-                animateClipAction.setEffectiveTimeScale(1)
-                animateClipAction.setEffectiveWeight(1)
+                myTalkingAction = myMixer.clipAction(clip)
+                myTalkingAction.setEffectiveTimeScale(1)
+                myTalkingAction.setEffectiveWeight(1)
                 // 动画播放的方式
-                //animateClipAction.setLoop(THREE.LoopOnce)
-                animateClipAction.play()
+                myTalkingAction.setLoop(THREE.LoopOnce)
+                //myTalkingAction.play();
+
             }
         }, (e)=>{
 
         }, (o) => {
-            if (o.isBone && o.name === 'Head') { 
-                myHead = o;
-                console.log('my head:', o);
+            if (o.isBone) { 
+                //CC_Base_L_Hand
+                
+                console.log(o.name, o);
             }
         });
         
