@@ -4,3 +4,7 @@ demo/jmgraph/package-lock.json
 demo/jmgraph/yarn.lock
 demo/threejs/model/talking/kevin.fbx
 demo/threejs/model/talking/kevin.Fbx
+demo/threejs/model/talking/kevin-zip.glb
+.gitignore
+demo/threejs/model/talking/kevin.glb
+demo/threejs/threejs.zip
