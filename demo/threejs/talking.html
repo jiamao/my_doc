@@ -26,6 +26,7 @@
         import { GLTFLoader } from './lib/threejs/jsm/loaders/GLTFLoader.js';
         import { DRACOLoader } from './lib/threejs/jsm/loaders/DRACOLoader.js';
         import { FBXLoader } from './lib/threejs/jsm/loaders/FBXLoader.js';
+        import { OBJLoader } from './lib/threejs/jsm/loaders/OBJLoader.js';
         import { OrbitControls } from './lib/threejs/jsm/controls/OrbitControls.js';
         import { TextGeometry } from './lib/threejs/jsm/geometries/TextGeometry.js';
        
@@ -107,18 +108,20 @@
         const gltfLoader = new GLTFLoader();
         gltfLoader.setDRACOLoader(new DRACOLoader());
         const fbxLoader = new FBXLoader();
+        const objLoader = new OBJLoader();
+
         let myMixer = null;
         let myModel = null;
         let myHead = null;
         let myTalkingAction = null;
-        loadObj('model/talking/kevin.fbx', (obj)=>{
+        loadObj('model/talking/kevin_obj/kevin.obj', (obj)=>{
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
             const fileAnis = obj.animations;
             console.log(fileAnis);
             myModel.scale.set(0.2, 0.2, 0.2);
             myModel.position.y = -11;
-            myModel.rotation.x = -0.5 * Math.PI;
+            //myModel.rotation.x = -0.5 * Math.PI;
             scene.add(myModel);
 
             myMixer = new THREE.AnimationMixer(myModel);
@@ -198,7 +201,10 @@
         }
 
         function loadObj(url, success, progress, traverse) {
-            const loader = url.toLowerCase().includes('.fbx')? fbxLoader : gltfLoader;
+            let loader = gltfLoader;
+            if(url.toLowerCase().includes('.fbx')) loader = fbxLoader;
+            else if(url.toLowerCase().includes('.obj')) loader = objLoader;
+
             loader.load(url, (obj) => {
                 
                 // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。
