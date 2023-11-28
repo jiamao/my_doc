@@ -40,7 +40,7 @@ import {
 	Vector4,
 	VectorKeyframeTrack,
 	SRGBColorSpace
-} from 'three';
+} from '../../src/Three.js';
 import * as fflate from '../libs/fflate.module.js';
 import { NURBSCurve } from '../curves/NURBSCurve.js';
 

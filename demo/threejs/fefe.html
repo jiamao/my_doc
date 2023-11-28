@@ -24,6 +24,7 @@
         /// <reference path="./node_modules/@types/three/index.d.ts" />
         import * as THREE from './lib/threejs/src/Three.js';
         import { GLTFLoader } from './lib/threejs/jsm/loaders/GLTFLoader.js';
+        import { FBXLoader } from './lib/threejs/jsm/loaders/FBXLoader.js';
         import { OrbitControls } from './lib/threejs/jsm/controls/OrbitControls.js';
         import { TextGeometry } from './lib/threejs/jsm/geometries/TextGeometry.js';
        
@@ -142,16 +143,38 @@
         
 
         // 加载人物模型
-        const loader = new GLTFLoader();
-
+        const gltfLoader = new GLTFLoader();
+        const fbxLoader = new FBXLoader();
+        let myMixer = null;
         let myModel = null;
-        loadObj('model/fefe.glb', (gltf)=>{
-            myModel = gltf.scene;
-            const fileAnis = gltf.animations;
+        let myHead = null;
+        loadObj('model/cat.fbx', (obj)=>{
+            //if(obj.clone) obj = obj.clone();
+            myModel = (obj.scene || obj);
+            const fileAnis = obj.animations;
             console.log(fileAnis);
-            myModel.scale.set(15, 15, 15);
+            myModel.scale.set(0.2, 0.2, 0.2);
             myModel.position.y = -11;
             scene.add(myModel);
+
+            myMixer = new THREE.AnimationMixer(myModel);
+
+            const clip = fileAnis[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
+            if (clip) {
+                const animateClipAction = myMixer.clipAction(clip)
+                animateClipAction.setEffectiveTimeScale(1)
+                animateClipAction.setEffectiveWeight(1)
+                // 动画播放的方式
+                //animateClipAction.setLoop(THREE.LoopOnce)
+                animateClipAction.play()
+            }
+        }, (e)=>{
+
+        }, (o) => {
+            if (o.isBone && o.name === 'Head') { 
+                myHead = o;
+                console.log('my head:', o);
+            }
         });
         
         loadObj('model/yz.glb', (gltf)=>{
@@ -160,8 +183,8 @@
             scene.add(gltf.scene);
         });
 
-        let myMixer = null;
-        loadObj('model/horseridingnyi.glb', (gltf) => {
+        
+        /*loadObj('model/horseridingnyi.glb', (gltf) => {
             const model = gltf.scene;
             const fileAnis = gltf.animations;
             myMixer = new THREE.AnimationMixer(model);
@@ -169,7 +192,7 @@
             console.log(ani);
 
             const aniAction = myMixer.clipAction(ani);
-            //aniAction.setLoop(true, 1);
+            //aniAction.setLoop(THREE.LoopOnce);
             aniAction.play();
 
             //model.scale.set(15, 15, 15);
@@ -178,7 +201,7 @@
             model.position.z = -80;
 
             scene.add(model);
-        });
+        });*/
 
        /* window.onresize = (e) => {
             width = window.innerWidth, height = window.innerHeight;
@@ -212,9 +235,9 @@
             mesh.rotation.x = time / 5000;
             mesh.rotation.y = time / 2000;
 
-            if(myModel) {
+            if(myHead) {
                 //myModel.rotation.x = mesh.rotation.x;
-                myModel.rotation.y = mesh.rotation.y;
+                myHead.rotation.y = mesh.rotation.y;
             }
 
             if(myMixer) {
@@ -229,13 +252,27 @@
 
         }
 
-        function loadObj(url, success, progress) {
-            loader.load(url, (gltf) => {
+        // 连续播放动画
+        function playModifierAnimation(from, fSpeed, to, tSpeed) {
+            to.setLoop(THREE.LoopOnce);
+            to.reset();
+            to.play();
+            from.crossFadeTo(to, fSpeed, true);
+            setTimeout(function() {
+                from.enabled = true;
+                to.crossFadeTo(from, tSpeed, true);
+                
+            }, to._clip.duration * 1000 - ((tSpeed + fSpeed) * 1000));
+        }
+
+        function loadObj(url, success, progress, traverse) {
+            const loader = url.includes('.fbx')? fbxLoader : gltfLoader;
+            loader.load(url, (obj) => {
+                
                 // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。
-                gltf.scene.traverse(o => {
-                    if (o.isBone) {
-                        console.log(o.name);
-                    }
+                (obj.scene||obj).traverse(o => {
+                    if(traverse) traverse(o);
+                    
                     if (o.isMesh) {
                         o.castShadow = true;
                         o.receiveShadow = true;
@@ -243,7 +280,7 @@
                     }
                 });
 
-                success && success(gltf);
+                success && success(obj);
             }, (e)=>{
                 progress && progress(e);
             }, (err) => {
