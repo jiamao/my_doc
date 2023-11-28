@@ -107,7 +107,7 @@
 
         
         //floor.material = stacy_mtl;
-
+/*
         const geometry = new THREE.BoxGeometry( 1, 1, 1 );
         const material = new THREE.MeshNormalMaterial({            
             wireframe: true,
@@ -124,7 +124,7 @@
             }
         });
 
-        scene.add( mesh );
+        scene.add( mesh );*/
 
         const renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setSize( width, height );
@@ -148,12 +148,12 @@
         let myMixer = null;
         let myModel = null;
         let myHead = null;
-        loadObj('model/cat.fbx', (obj)=>{
+        loadObj('model/kevin.glb', (obj)=>{
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
             const fileAnis = obj.animations;
             console.log(fileAnis);
-            myModel.scale.set(0.2, 0.2, 0.2);
+            myModel.scale.set(0.3, 0.3, 0.3);
             myModel.position.y = -11;
             scene.add(myModel);
 
@@ -232,20 +232,22 @@
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
                 camera.updateProjectionMatrix();
             }
-            mesh.rotation.x = time / 5000;
-            mesh.rotation.y = time / 2000;
+            const rx = time / 5000;
+            const ry = time / 2000;
+            //mesh.rotation.x = time / 5000;
+            //mesh.rotation.y = time / 2000;
 
             if(myHead) {
-                //myModel.rotation.x = mesh.rotation.x;
-                myHead.rotation.y = mesh.rotation.y;
+                //myModel.rotation.x = rx;
+                myHead.rotation.y = ry;
             }
 
             if(myMixer) {
                 myMixer.update(clock.getDelta());
             }
 
-            sphere.rotation.y = mesh.rotation.y;
-            sphere.rotation.x = mesh.rotation.x;
+            sphere.rotation.y = ry;
+            sphere.rotation.x = rx;
 
             
             renderer.render( scene, camera );
@@ -266,7 +268,7 @@
         }
 
         function loadObj(url, success, progress, traverse) {
-            const loader = url.includes('.fbx')? fbxLoader : gltfLoader;
+            const loader = url.toLowerCase().includes('.fbx')? fbxLoader : gltfLoader;
             loader.load(url, (obj) => {
                 
                 // 使用模型的 traverse 方法遍历所有网格（mesh）以启用投射和接收阴影的能力。该操作需要在 scene.add(model) 前完成。

@@ -2,3 +2,5 @@ framework/vue/gulp_pack/package-lock.json
 node_modules
 demo/jmgraph/package-lock.json
 demo/jmgraph/yarn.lock
+demo/threejs/model/talking/kevin.fbx
+demo/threejs/model/talking/kevin.Fbx
