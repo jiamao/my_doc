@@ -66,8 +66,8 @@
         let myModel = null;
         let myHead = null;
         let myTalkingAction = null;
-        app.loadObj('model/kevin.fbx', (obj)=>{
-            
+        /*app.loadObj('https://sms.ciccten.com/vhuman/data/talking/kevin.fbx', (obj)=>{
+            return;
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
             myModel.scale.set(0.15, 0.15, 0.15);
@@ -104,7 +104,7 @@
             gltf.scene.scale.set(15, 15, 15);
             gltf.scene.position.set(-10, -11, -10);
             app.scene.add(gltf.scene);
-        });
+        });*/
 
         
         // 检查是否需要更新大小

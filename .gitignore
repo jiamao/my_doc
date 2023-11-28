@@ -8,3 +8,5 @@ demo/threejs/model/talking/kevin-zip.glb
 .gitignore
 demo/threejs/model/talking/kevin.glb
 demo/threejs/threejs.zip
+demo/threejs/model/kevin.fbx
+demo/threejs/model/kevin.fbxkey
