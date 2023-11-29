@@ -66,7 +66,7 @@
         let myModel = null;
         let myHead = null;
         let myTalkingAction = null;
-        app.loadObj('https://sms.ciccten.com/vhuman/data/talking/kevin.fbx', (obj)=>{
+        app.loadObj('model/kevin.fbx', (obj)=>{
             
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
@@ -81,6 +81,7 @@
 
             const clip = obj.animations[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
             if (clip) {
+                clip.tracks.splice(0, 220);
                 myTalkingAction = myMixer.clipAction(clip)
                 myTalkingAction.setEffectiveTimeScale(1)
                 myTalkingAction.setEffectiveWeight(1)
@@ -156,7 +157,7 @@
 
         var audioContext= null;
 		//音频容器
-		var audioBufferSouceNode,analyser, currentAudioData;	
+		var audioBufferSouceNode,analyser, currentAudioData, isTalking=false;	
 
         loadSoundFile('https://jt-ai-draw-1301270551.cos.ap-guangzhou.myqcloud.com/obj/1701177091784.mp3', function(buffer) {
 			currentAudioData = buffer;
@@ -188,6 +189,15 @@
 				audioBufferSouceNode.stop();
 			}
 			audioBufferSouceNode = audioContext.createBufferSource();	
+
+            audioBufferSouceNode.onended = function(e) {
+                console.log('play end', e);
+                isTalking = false;
+            }
+            audioBufferSouceNode.addEventListener('play', (e)=>{
+                console.log('play', e);
+            });
+
 			audioBufferSouceNode.buffer = buffer;
 			////连接到扬声器
 			//audioBufferSouceNode.connect(audioContext.destination);
@@ -195,6 +205,8 @@
 			createAnalyser(audioBufferSouceNode);
 			//开始播放
 			audioBufferSouceNode.start(0);
+            isTalking = true;
+
             if(myTalkingAction) myTalkingAction.reset();
 		}
 
@@ -205,32 +217,66 @@
 			}
 			//频谱能量分析器
 			analyser = audioContext.createAnalyser();
+            // 分析音频
+            analyser.fftSize = 2048;
+
 			souceNode.connect(analyser);
 			//扬声器
 			analyser.connect(audioContext.destination);
 
-			drawAnalyserData(analyser);//绘制漂亮的频谱图
+			//drawAnalyserData(analyser);//绘制漂亮的频谱图
 		}
 
 		//画频谱能量图
+        const soundBox = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshNormalMaterial({
+           // color: 0xff0000,
+            opacity: 0.7,
+            transparent: true
+        }));
+        soundBox.position.set(-5, -11, 25);
+        app.scene.add(soundBox);
+
+
 		function drawAnalyserData() {
             if(!analyser) return;
 			//获取频率能量值
 			var array = new Uint8Array(analyser.frequencyBinCount);
 			analyser.getByteFrequencyData(array);
 			
-            var total = 0, count=0;
-			for(var i=0;i<array.length;i++) {
-				total += array[i];
-                if(array[i] > 0) count ++;
-			}
-            var per = total / count;
-            console.log('平均谱值：', per);
+            const sum = array.reduce((a, b) => a + b, 0);
+            const average = sum / array.length;
+
+            //const hasHuman = detectHumanVoice(analyser, array);
             if(myTalkingAction) {
-                if(per > 0) myTalkingAction.play();
-                else myTalkingAction.stop();
+                if(average > 25 && isTalking) {
+                    myTalkingAction.play();
+                }
+                else {
+                    myTalkingAction.stop();
+                }
             }
+
+            console.log(average);
+            soundBox.scale.y = average/255*50;
 		}
+
+        // 获取音频数据并检测人声
+        function detectHumanVoice(analyser) {
+            var array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteTimeDomainData(array);
+            const sum = array.reduce((a, b) => a + b, 0);
+            const average = sum / array.length;
+
+            soundBox.scale.y = average/255*50;
+
+            console.log(average);
+            if (average > 128) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
 
         app.bindAnimation( (time) => {
             drawAnalyserData();
