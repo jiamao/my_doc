@@ -66,7 +66,7 @@
         let myModel = null;
         let myHead = null;
         let myTalkingAction = null;
-        app.loadObj('model/kevin.fbx', (obj)=>{
+        app.loadObj('model/Flair.fbx', (obj)=>{
             
             //if(obj.clone) obj = obj.clone();
             myModel = (obj.scene || obj);
@@ -78,7 +78,7 @@
             app.scene.add(myModel);
             
             myMixer = new THREE.AnimationMixer(myModel);
-
+            console.log('animations', obj.animations);
             const clip = obj.animations[0];//THREE.AnimationClip.findByName(fileAnis, 'mixamo.com')
             if (clip) {
                 clip.tracks.splice(0, 220);
@@ -87,7 +87,7 @@
                 myTalkingAction.setEffectiveWeight(1)
                 // 动画播放的方式
                 //myTalkingAction.setLoop(THREE.LoopOnce)
-                //myTalkingAction.play();
+                myTalkingAction.play();
 
             }
         }, (e)=>{

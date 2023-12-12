@@ -1,0 +1,28 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+    <title>Background Removal with fabric.js</title>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.7.0/fabric.min.js"></script>  
+</head>  
+<body>  
+    <canvas id="c" width="600" height="400"></canvas>  
+    <script>  
+        var canvas = new fabric.Canvas('c');  
+        var imgElement = document.createElement('img');  
+        imgElement.src = 'https://jtcospublic.ciccten.com/jt-toufang-new/image/1701082814395/5.0banner2.png';  
+        imgElement.onload = function () {  
+            var imgInstance = new fabric.Image(imgElement, {  
+                left: 0,  
+                top: 0,  
+                angle: 0,  
+                opacity: 1,  
+                filters: [new fabric.Image.filters.RemoveColor({  
+                    color: '#FFFFFF', // 要移除的背景颜色  
+                    distance: 50, // 颜色距离阈值  
+                })],  
+            });  
+            canvas.add(imgInstance);  
+        };  
+    </script>  
+</body>  
+</html>

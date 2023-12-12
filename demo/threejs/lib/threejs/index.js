@@ -68,7 +68,7 @@ function createApp(canvas, option = {}) {
 
 // 添加光源
 function addLights(scene=this.scene, option={}) {
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.61);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
     hemiLight.position.set(0, 50, 0);
     // Add hemisphere light to scene
     scene.add(hemiLight);
